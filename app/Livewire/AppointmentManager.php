@@ -34,9 +34,9 @@ class AppointmentManager extends Component
 
     public ?int $generatedSerial = null;
 
-    public function mount(?int $chamberId = null, bool $portal = false): void
+    public function mount(?int $chamberId = null): void
     {
-        $this->is_public_portal = $portal;
+        $this->is_public_portal = request()->routeIs('appointment.public_book');
         $this->selected_date = today()->toDateString();
 
         if ($chamberId) {

@@ -12,9 +12,7 @@ Route::get('/prescriptions', PrescriptionList::class)->name('prescription.list')
 
 Route::get('/appointments', AppointmentManager::class)->name('appointment.manager');
 
-Route::get('/book/{chamberId?}', function (?int $chamberId = null) {
-    return app(AppointmentManager::class, ['chamberId' => $chamberId, 'portal' => true]);
-})->name('appointment.public_book');
+Route::get('/book/{chamberId?}', AppointmentManager::class)->name('appointment.public_book');
 
 Route::get('/prescriptions/{prescription}/print', [PrescriptionPrintController::class, 'show'])
     ->name('prescription.print');

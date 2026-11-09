@@ -63,6 +63,20 @@ class PrescriptionFeatureTest extends TestCase
         ]);
     }
 
+    public function test_public_booking_page_loads_successfully(): void
+    {
+        $chamber = Chamber::create([
+            'name' => 'Square Hospital',
+            'doctor_name' => 'Dr. Mahbubur Rahman',
+            'specialty' => 'Nephrology / CKD Specialist',
+            'is_default' => true,
+        ]);
+
+        $response = $this->get('/book/'.$chamber->id);
+        $response->assertStatus(200);
+        $response->assertSee('Square Hospital');
+    }
+
     public function test_doctor_can_call_patient_from_today_queue_and_auto_fill(): void
     {
         $chamber = Chamber::create([
