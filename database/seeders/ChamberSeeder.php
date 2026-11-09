@@ -3,14 +3,22 @@
 namespace Database\Seeders;
 
 use App\Models\Chamber;
+use App\Models\Tenant;
 use Illuminate\Database\Seeder;
 
 class ChamberSeeder extends Seeder
 {
     public function run(): void
     {
-        Chamber::updateOrCreate(
-            ['name' => 'Bikrify Digital Health Care - Banani'],
+        $tenant = Tenant::first() ?? Tenant::create([
+            'slug' => 'dr-mahbubur',
+            'doctor_name' => 'Prof. Dr. Mahbubur Rahman',
+            'bmdc_no' => 'A-45210',
+            'status' => 'active',
+        ]);
+
+        Chamber::withoutGlobalScope('tenant')->updateOrCreate(
+            ['tenant_id' => $tenant->id, 'name' => 'Bikrify Digital Health Care - Banani'],
             [
                 'hospital_affiliation' => 'Bikrify Specialist Care',
                 'doctor_name' => 'Prof. Dr. Mahbubur Rahman',
@@ -27,8 +35,8 @@ class ChamberSeeder extends Seeder
             ]
         );
 
-        Chamber::updateOrCreate(
-            ['name' => 'Popular Diagnostic Center - Dhanmondi'],
+        Chamber::withoutGlobalScope('tenant')->updateOrCreate(
+            ['tenant_id' => $tenant->id, 'name' => 'Popular Diagnostic Center - Dhanmondi'],
             [
                 'hospital_affiliation' => 'Popular Medical College & Hospital',
                 'doctor_name' => 'Prof. Dr. Mahbubur Rahman',
@@ -45,20 +53,20 @@ class ChamberSeeder extends Seeder
             ]
         );
 
-        Chamber::updateOrCreate(
-            ['name' => 'Square Hospital & Medical Center'],
+        Chamber::withoutGlobalScope('tenant')->updateOrCreate(
+            ['tenant_id' => $tenant->id, 'name' => 'Square Hospital & Medical Center'],
             [
                 'hospital_affiliation' => 'Square Hospitals Ltd.',
                 'doctor_name' => 'Prof. Dr. Mahbubur Rahman',
                 'doctor_qualification' => 'MBBS, FCPS, MD (Nephrology), BCS (Health)',
-                'doctor_designation' => 'Senior Consultant Nephrologist',
+                'doctor_designation' => 'Senior Consultant & Nephrologist',
                 'specialty' => 'Nephrology / CKD Specialist',
-                'address' => '18/F Bir Uttam Qazi Nuruzzaman Sarak, West Panthapath, Dhaka',
-                'room_number' => 'OPD Room #12, 1st Floor',
-                'phone' => '+880 1713-377773',
-                'secondary_phone' => '+880 1713-377774',
-                'whatsapp_number' => '+8801713377773',
-                'visiting_hours' => '10:00 AM - 1:00 PM (Sun, Tue, Thu)',
+                'address' => '18F, Bir Uttam Qazi Nuruzzaman Sarak, West Panthapath, Dhaka',
+                'room_number' => 'OPD-2, Room #312',
+                'phone' => '+880 1713-000111',
+                'secondary_phone' => '+880 1819-222333',
+                'whatsapp_number' => '+8801713000111',
+                'visiting_hours' => '6:00 PM - 9:00 PM (Sun, Tue, Thu)',
                 'is_default' => false,
             ]
         );

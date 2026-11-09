@@ -4,19 +4,26 @@ namespace Database\Seeders;
 
 use App\Models\Appointment;
 use App\Models\Chamber;
+use App\Models\Tenant;
 use Illuminate\Database\Seeder;
 
 class AppointmentSeeder extends Seeder
 {
     public function run(): void
     {
-        $chamber = Chamber::first();
+        $tenant = Tenant::first();
+        if (! $tenant) {
+            return;
+        }
+
+        $chamber = Chamber::withoutGlobalScope('tenant')->where('tenant_id', $tenant->id)->first();
         if (! $chamber) {
             return;
         }
 
-        Appointment::firstOrCreate(
+        Appointment::withoutGlobalScope('tenant')->updateOrCreate(
             [
+                'tenant_id' => $tenant->id,
                 'chamber_id' => $chamber->id,
                 'patient_name' => 'Abdur Razzaq',
                 'appointment_date' => today(),
@@ -32,8 +39,9 @@ class AppointmentSeeder extends Seeder
             ]
         );
 
-        Appointment::firstOrCreate(
+        Appointment::withoutGlobalScope('tenant')->updateOrCreate(
             [
+                'tenant_id' => $tenant->id,
                 'chamber_id' => $chamber->id,
                 'patient_name' => 'Nasima Begum',
                 'appointment_date' => today(),
@@ -46,23 +54,6 @@ class AppointmentSeeder extends Seeder
                 'appointment_time' => '04:30 PM',
                 'status' => 'waiting',
                 'notes' => 'Diabetic patient, routine kidney function checkup.',
-            ]
-        );
-
-        Appointment::firstOrCreate(
-            [
-                'chamber_id' => $chamber->id,
-                'patient_name' => 'Tanvir Hasan',
-                'appointment_date' => today(),
-            ],
-            [
-                'serial_no' => 3,
-                'patient_phone' => '01911778899',
-                'patient_age' => 38,
-                'patient_gender' => 'Male',
-                'appointment_time' => '04:45 PM',
-                'status' => 'waiting',
-                'notes' => 'Follow up after 1 month with Serum Creatinine report.',
             ]
         );
     }
