@@ -63,7 +63,7 @@ class PrescriptionFeatureTest extends TestCase
         ]);
     }
 
-    public function test_public_booking_page_loads_successfully(): void
+    public function test_chamber_qr_standee_poster_loads_successfully(): void
     {
         $chamber = Chamber::create([
             'name' => 'Square Hospital',
@@ -72,9 +72,10 @@ class PrescriptionFeatureTest extends TestCase
             'is_default' => true,
         ]);
 
-        $response = $this->get('/book/'.$chamber->id);
-        $response->assertStatus(200);
-        $response->assertSee('Square Hospital');
+        $qrResponse = $this->get('/chambers/'.$chamber->id.'/qr-standee');
+        $qrResponse->assertStatus(200);
+        $qrResponse->assertSee('Square Hospital');
+        $qrResponse->assertSee('Scan with Phone Camera');
     }
 
     public function test_doctor_can_call_patient_from_today_queue_and_auto_fill(): void

@@ -99,9 +99,12 @@
                         + Hospital
                     </button>
                     @if($selected_chamber_id)
-                        <button type="button" wire:click="openEditChamberModal({{ $selected_chamber_id }})" class="text-xs bg-amber-400 hover:bg-amber-500 text-cyan-950 px-3 py-2 rounded-lg font-bold transition">
+                        <button type="button" wire:click="openEditChamberModal({{ $selected_chamber_id }})" class="text-xs bg-amber-400 hover:bg-amber-500 text-cyan-950 px-3 py-2 rounded-lg font-bold transition cursor-pointer">
                             ⚙️ Setup
                         </button>
+                        <a href="{{ route('chamber.qr_standee', $selected_chamber_id) }}" target="_blank" class="text-xs bg-slate-800 hover:bg-slate-700 text-cyan-200 px-3 py-2 rounded-lg font-bold transition flex items-center gap-1" title="Print Chamber Door QR Standee">
+                            <span>📲</span> Door QR
+                        </a>
                     @endif
                 </div>
 
