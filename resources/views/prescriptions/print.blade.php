@@ -27,7 +27,7 @@
         
         /* Pre-printed Pad Letterhead Mode */
         body.letterhead-mode .header-table { display: none; }
-        body.letterhead-mode .letterhead-spacer { display: block !important; height: 50mm; }
+        body.letterhead-mode .letterhead-spacer { display: block !important; }
 
         @media print {
             .no-print { display: none !important; }
@@ -35,22 +35,47 @@
     </style>
 </head>
 <body>
-    <div class="no-print" style="background:#0891b2; padding:10px 20px; display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; color:#fff;">
+    <div class="no-print" style="background:#0891b2; padding:12px 20px; display:flex; flex-wrap:wrap; justify-content:space-between; align-items:center; gap:10px; margin-bottom:20px; color:#fff;">
         <div style="font-weight:bold; font-size:13px;">
-            Prescription #{{ $prescription->prescription_no }} &nbsp;|&nbsp; {{ $prescription->patient->name }}
+            Prescription #{{ $prescription->prescription_no }} &nbsp;|&nbsp; Patient: {{ $prescription->patient->name }}
         </div>
-        <div>
-            <label style="margin-right:15px; font-size:12px; cursor:pointer;">
+        <div style="display:flex; align-items:center; flex-wrap:wrap; gap:8px;">
+            <!-- Letterhead Pad Mode Toggle -->
+            <label style="font-size:11px; background:#0e7490; padding:5px 10px; border-radius:4px; cursor:pointer; display:flex; align-items:center; gap:5px;">
                 <input type="checkbox" id="togglePad" onchange="document.body.classList.toggle('letterhead-mode', this.checked)">
-                Pre-printed Pad Mode (Hide Header)
+                Pre-printed Pad Mode
             </label>
-            <button onclick="window.print()" style="padding:6px 14px; background:#fff; color:#0891b2; font-weight:bold; border:none; border-radius:4px; cursor:pointer;">Print Now</button>
-            <a href="{{ route('prescription.pdf', $prescription->id) }}" style="padding:6px 14px; background:#0e7490; color:#fff; font-weight:bold; text-decoration:none; border-radius:4px; margin-left:10px;">Download PDF</a>
-            <a href="{{ route('prescription.builder') }}" style="padding:6px 14px; background:#164e63; color:#fff; font-weight:bold; text-decoration:none; border-radius:4px; margin-left:10px;">Back to Studio</a>
+
+            <!-- Letterhead Margin Adjuster -->
+            <select id="padMargin" onchange="document.getElementById('spacer').style.height = this.value" style="font-size:11px; padding:4px 6px; border-radius:4px; background:#fff; color:#1f2937; border:none;">
+                <option value="40mm">Pad Gap: 40mm</option>
+                <option value="50mm" selected>Pad Gap: 50mm</option>
+                <option value="60mm">Pad Gap: 60mm</option>
+                <option value="70mm">Pad Gap: 70mm</option>
+            </select>
+
+            <!-- WhatsApp Direct Share -->
+            @php
+                $patientPhone = preg_replace('/[^0-9]/', '', (string)$prescription->patient->phone);
+                if (str_starts_with($patientPhone, '01')) {
+                    $patientPhone = '88' . $patientPhone;
+                }
+                $waText = urlencode("Hello " . $prescription->patient->name . ",\nYour digital prescription Rx #" . $prescription->prescription_no . " from " . $prescription->doctor_name . " at " . $prescription->chamber_name . " is ready.\n\nView or download: " . route('prescription.print', $prescription->id));
+            @endphp
+            @if($patientPhone)
+                <a href="https://wa.me/{{ $patientPhone }}?text={{ $waText }}" target="_blank" style="padding:6px 12px; background:#22c55e; color:#fff; font-weight:bold; font-size:11px; text-decoration:none; border-radius:4px; display:inline-flex; align-items:center; gap:4px;">
+                    💬 Send WhatsApp
+                </a>
+            @endif
+
+            <button onclick="window.print()" style="padding:6px 14px; background:#fff; color:#0891b2; font-weight:bold; font-size:11px; border:none; border-radius:4px; cursor:pointer;">Print Now</button>
+            <a href="{{ route('prescription.pdf', $prescription->id) }}" style="padding:6px 14px; background:#0e7490; color:#fff; font-weight:bold; font-size:11px; text-decoration:none; border-radius:4px;">Download PDF</a>
+            <a href="{{ route('prescription.builder') }}" style="padding:6px 14px; background:#164e63; color:#fff; font-weight:bold; font-size:11px; text-decoration:none; border-radius:4px;">Back to Studio</a>
         </div>
     </div>
 
-    <div class="letterhead-spacer" style="display:none;"></div>
+    <!-- Letterhead Spacer for physical pre-printed hospital pads -->
+    <div id="spacer" class="letterhead-spacer" style="display:none; height:50mm;"></div>
 
     <!-- Chamber & Doctor Header Table -->
     <table class="header-table">
