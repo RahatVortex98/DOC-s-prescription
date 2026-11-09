@@ -1,3 +1,5 @@
+# DOC-s-prescription
+
 # Bikrify Prescription Builder (Laravel 12 + Livewire 3)
 
 ## Quick Start for Collaborators
