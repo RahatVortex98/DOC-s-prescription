@@ -17,9 +17,14 @@ class Prescription extends Model
     protected $fillable = [
         'prescription_no',
         'patient_id',
+        'chamber_id',
         'doctor_name',
         'doctor_qualification',
+        'doctor_designation',
         'chamber_name',
+        'chamber_address',
+        'chamber_phone',
+        'chamber_visiting_hours',
         'prescription_date',
         'chief_complaints',
         'clinical_findings',
@@ -44,6 +49,14 @@ class Prescription extends Model
     public function patient(): BelongsTo
     {
         return $this->belongsTo(Patient::class);
+    }
+
+    /**
+     * @return BelongsTo<Chamber, $this>
+     */
+    public function chamber(): BelongsTo
+    {
+        return $this->belongsTo(Chamber::class);
     }
 
     /**

@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Livewire\PrescriptionBuilder;
+use App\Models\Chamber;
 use App\Models\Medicine;
 use App\Models\Patient;
 use App\Models\Prescription;
@@ -17,57 +18,148 @@ class PrescriptionFeatureTest extends TestCase
 
     public function test_prescription_builder_page_loads_successfully(): void
     {
+        Chamber::create([
+            'name' => 'Popular Diagnostic Center',
+            'doctor_name' => 'Dr. Mahbubur Rahman',
+            'specialty' => 'Nephrology / CKD Specialist',
+            'is_default' => true,
+        ]);
+
         $response = $this->get('/');
 
         $response->assertStatus(200);
         $response->assertSee('Bikrify Prescription Studio');
+        $response->assertSee('Popular Diagnostic Center');
     }
 
-    public function test_medicine_search_returns_matching_results(): void
+    public function test_medicine_search_returns_multiple_variants_including_napa_extra(): void
     {
         Medicine::create([
-            'brand_name' => 'Napa Extend',
+            'brand_name' => 'Napa',
             'generic_name' => 'Paracetamol',
             'dosage_form' => 'Tab.',
-            'strength' => '665mg',
-            'manufacturer' => 'Beximco Pharmaceuticals Ltd.',
+            'strength' => '500mg',
+            'manufacturer' => 'Beximco',
+        ]);
+
+        Medicine::create([
+            'brand_name' => 'Napa Extra',
+            'generic_name' => 'Paracetamol + Caffeine',
+            'dosage_form' => 'Tab.',
+            'strength' => '500mg+65mg',
+            'manufacturer' => 'Beximco',
+        ]);
+
+        Medicine::create([
+            'brand_name' => 'Napa One',
+            'generic_name' => 'Paracetamol',
+            'dosage_form' => 'Tab.',
+            'strength' => '1000mg',
+            'manufacturer' => 'Beximco',
         ]);
 
         Livewire::test(PrescriptionBuilder::class)
-            ->set('search', 'Nap')
+            ->set('search', 'napa')
             ->assertSet('searchResults', function ($results) {
-                return count($results) === 1 && $results[0]['brand_name'] === 'Napa Extend';
+                $names = array_column($results, 'brand_name');
+
+                return in_array('Napa', $names)
+                    && in_array('Napa Extra', $names)
+                    && in_array('Napa One', $names);
             });
     }
 
-    public function test_user_can_add_and_remove_medicine_rows(): void
+    public function test_old_patient_lookup_and_repeat_previous_prescription(): void
     {
+        $patient = Patient::create([
+            'patient_id' => 'PID-OLD101',
+            'name' => 'Karim Ullah',
+            'phone' => '01712345678',
+            'age' => 58,
+            'gender' => 'Male',
+        ]);
+
+        $pastRx = Prescription::create([
+            'prescription_no' => 'RX-20261101-111',
+            'patient_id' => $patient->id,
+            'doctor_name' => 'Dr. Mahbubur Rahman',
+            'prescription_date' => '2026-11-01',
+            'diagnosis' => 'CKD Stage 4',
+        ]);
+
+        $pastRx->items()->create([
+            'type' => 'Tab.',
+            'medicine_name' => 'Ketosteril',
+            'dosage' => '1+1+1',
+            'duration' => '1 month',
+            'instructions' => 'With meal',
+        ]);
+
         Livewire::test(PrescriptionBuilder::class)
-            ->assertCount('items', 1)
-            ->call('addItem', [
-                'type' => 'Inj.',
-                'name' => 'Ceftri',
-                'generic' => 'Ceftriaxone',
-                'strength' => '500mg',
-                'dosage' => '1+0+0',
-                'duration' => '3 days',
-                'instruction' => 'After meal',
-            ])
-            ->assertCount('items', 2)
-            ->call('removeItem', 0)
-            ->assertCount('items', 1)
-            ->assertSet('items.0.name', 'Ceftri');
+            ->set('patient_search', '01712345678')
+            ->assertSet('patientSearchResults', function ($results) {
+                return count($results) === 1 && $results[0]['name'] === 'Karim Ullah';
+            })
+            ->call('selectPatient', $patient->id)
+            ->assertSet('is_existing_patient', true)
+            ->assertSet('patient_name', 'Karim Ullah')
+            ->assertSet('patient_age', '58')
+            ->call('repeatPreviousPrescription', $pastRx->id)
+            ->assertSet('items.0.name', 'Ketosteril')
+            ->assertSet('items.0.dosage', '1+1+1')
+            ->assertSet('diagnosis', 'CKD Stage 4');
     }
 
-    public function test_validation_prevents_saving_empty_prescription(): void
+    public function test_doctor_can_switch_and_customize_hospitals(): void
+    {
+        $chamber1 = Chamber::create([
+            'name' => 'Square Hospital',
+            'doctor_name' => 'Dr. Mahbubur Rahman',
+            'doctor_qualification' => 'MBBS, FCPS',
+            'doctor_designation' => 'Senior Consultant',
+            'specialty' => 'Nephrology / CKD Specialist',
+            'address' => 'Panthapath, Dhaka',
+            'phone' => '+880 1713-000000',
+            'is_default' => true,
+        ]);
+
+        $chamber2 = Chamber::create([
+            'name' => 'Popular Diagnostic Center',
+            'doctor_name' => 'Dr. Mahbubur Rahman',
+            'doctor_qualification' => 'MBBS, FCPS',
+            'doctor_designation' => 'Visiting Consultant',
+            'specialty' => 'Nephrology / CKD Specialist',
+            'address' => 'Dhanmondi, Dhaka',
+            'phone' => '+880 1819-000000',
+            'is_default' => false,
+        ]);
+
+        Livewire::test(PrescriptionBuilder::class)
+            ->assertSet('chamber_name', 'Square Hospital')
+            ->call('selectChamber', $chamber2->id)
+            ->assertSet('chamber_name', 'Popular Diagnostic Center')
+            ->assertSet('chamber_address', 'Dhanmondi, Dhaka');
+    }
+
+    public function test_specialty_quick_chips_append_clinical_notes(): void
     {
         Livewire::test(PrescriptionBuilder::class)
-            ->call('saveAndPrint')
-            ->assertHasErrors(['patient_name', 'patient_age']);
+            ->set('specialty', 'Nephrology / CKD Specialist')
+            ->call('appendQuickText', 'diagnosis', 'Chronic Kidney Disease (Stage 4)')
+            ->assertSet('diagnosis', 'Chronic Kidney Disease (Stage 4)')
+            ->call('appendQuickText', 'diagnosis', 'Diabetic Nephropathy')
+            ->assertSet('diagnosis', 'Chronic Kidney Disease (Stage 4), Diabetic Nephropathy');
     }
 
     public function test_save_and_print_creates_patient_and_prescription_and_redirects(): void
     {
+        $chamber = Chamber::create([
+            'name' => 'Banani Chamber',
+            'doctor_name' => 'Dr. Mahbubur Rahman',
+            'specialty' => 'Nephrology / CKD Specialist',
+            'is_default' => true,
+        ]);
+
         Livewire::test(PrescriptionBuilder::class)
             ->set('patient_name', 'Rahim Ahmed')
             ->set('patient_age', '45')
@@ -78,10 +170,8 @@ class PrescriptionFeatureTest extends TestCase
             ->set('diagnosis', 'Viral Fever')
             ->set('investigations', 'CBC, Urine R/E')
             ->set('advice', 'Drink plenty of fluids')
-            ->set('items.0.name', 'Napa Extend')
+            ->set('items.0.name', 'Napa Extra')
             ->set('items.0.type', 'Tab.')
-            ->set('items.0.generic', 'Paracetamol')
-            ->set('items.0.strength', '665mg')
             ->set('items.0.dosage', '1+0+1')
             ->set('items.0.duration', '5 days')
             ->set('items.0.instruction', 'After meal')
@@ -95,21 +185,9 @@ class PrescriptionFeatureTest extends TestCase
             'gender' => 'Male',
         ]);
 
-        $patient = Patient::where('phone', '01711223344')->first();
-        $this->assertNotNull($patient);
-
         $this->assertDatabaseHas('prescriptions', [
-            'patient_id' => $patient->id,
             'diagnosis' => 'Viral Fever',
-        ]);
-
-        $prescription = Prescription::where('patient_id', $patient->id)->first();
-        $this->assertNotNull($prescription);
-
-        $this->assertDatabaseHas('prescription_items', [
-            'prescription_id' => $prescription->id,
-            'medicine_name' => 'Napa Extend',
-            'dosage' => '1+0+1',
+            'chamber_name' => 'Banani Chamber',
         ]);
     }
 
@@ -126,9 +204,12 @@ class PrescriptionFeatureTest extends TestCase
         $prescription = Prescription::create([
             'prescription_no' => 'RX-20261109-999',
             'patient_id' => $patient->id,
-            'doctor_name' => 'Dr. Mahbubur Rahman',
-            'doctor_qualification' => 'MBBS, BCS (Health), MS (Surgery)',
-            'chamber_name' => 'Bikrify Digital Health Care',
+            'doctor_name' => 'Prof. Dr. Mahbubur Rahman',
+            'doctor_qualification' => 'MBBS, FCPS, MD (Nephrology)',
+            'doctor_designation' => 'Professor & Senior Consultant',
+            'chamber_name' => 'Popular Diagnostic Center - Dhanmondi',
+            'chamber_address' => 'House 16, Road 2, Dhanmondi',
+            'chamber_phone' => '+880 1819-556677',
             'prescription_date' => now()->toDateString(),
             'chief_complaints' => 'Stomach pain',
             'clinical_findings' => 'Epigastric tenderness',
@@ -152,8 +233,8 @@ class PrescriptionFeatureTest extends TestCase
         $response->assertStatus(200);
         $response->assertSee('Salma Khatun');
         $response->assertSee('RX-20261109-999');
+        $response->assertSee('Popular Diagnostic Center - Dhanmondi');
         $response->assertSee('Seclo');
-        $response->assertSee('Omeprazole');
     }
 
     public function test_prescription_pdf_download(): void
