@@ -22,3 +22,6 @@ Route::get('/prescriptions/{prescription}/print', [PrescriptionPrintController::
 
 Route::get('/prescriptions/{prescription}/pdf', [PrescriptionPrintController::class, 'downloadPdf'])
     ->name('prescription.pdf');
+
+Route::get('/prescriptions/{prescription}/investigations', [PrescriptionPrintController::class, 'investigationSlip'])
+    ->name('prescription.investigations');

@@ -11,18 +11,25 @@ class PrescriptionPrintController extends Controller
 {
     public function show(Prescription $prescription): View
     {
-        $prescription->load(['patient', 'items']);
+        $prescription->load(['patient', 'items', 'chamber']);
 
         return view('prescriptions.print', compact('prescription'));
     }
 
     public function downloadPdf(Prescription $prescription): Response
     {
-        $prescription->load(['patient', 'items']);
+        $prescription->load(['patient', 'items', 'chamber']);
 
         $pdf = Pdf::loadView('prescriptions.print', compact('prescription'))
             ->setPaper('a4', 'portrait');
 
         return $pdf->download("Prescription-{$prescription->prescription_no}.pdf");
+    }
+
+    public function investigationSlip(Prescription $prescription): View
+    {
+        $prescription->load(['patient', 'chamber']);
+
+        return view('prescriptions.investigations', compact('prescription'));
     }
 }

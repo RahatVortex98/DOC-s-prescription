@@ -68,6 +68,9 @@
                 </a>
             @endif
 
+            @if($prescription->investigations)
+                <a href="{{ route('prescription.investigations', $prescription->id) }}" target="_blank" style="padding:6px 14px; background:#6366f1; color:#fff; font-weight:bold; font-size:11px; text-decoration:none; border-radius:4px;">🧪 Lab Slip</a>
+            @endif
             <button onclick="window.print()" style="padding:6px 14px; background:#fff; color:#0891b2; font-weight:bold; font-size:11px; border:none; border-radius:4px; cursor:pointer;">Print Now</button>
             <a href="{{ route('prescription.pdf', $prescription->id) }}" style="padding:6px 14px; background:#0e7490; color:#fff; font-weight:bold; font-size:11px; text-decoration:none; border-radius:4px;">Download PDF</a>
             <a href="{{ route('prescription.builder') }}" style="padding:6px 14px; background:#164e63; color:#fff; font-weight:bold; font-size:11px; text-decoration:none; border-radius:4px;">Back to Studio</a>
