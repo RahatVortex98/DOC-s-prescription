@@ -84,9 +84,13 @@
                                 <div class="text-[10px] text-gray-400 truncate max-w-xs">{{ $rx->doctor_name }}</div>
                             </td>
                             <td class="p-3">
-                                <span class="inline-block bg-amber-50 text-amber-800 border border-amber-200 rounded px-2 py-0.5 font-semibold text-[11px]">
-                                    {{ $rx->diagnosis ?: 'General Checkup' }}
-                                </span>
+                                @if(auth()->user()?->isAssistant())
+                                    <span class="text-slate-400 italic text-[11px]">[Restricted]</span>
+                                @else
+                                    <span class="inline-block bg-amber-50 text-amber-800 border border-amber-200 rounded px-2 py-0.5 font-semibold text-[11px]">
+                                        {{ $rx->diagnosis ?: 'General Checkup' }}
+                                    </span>
+                                @endif
                             </td>
                             <td class="p-3">
                                 <span class="bg-slate-100 text-slate-700 px-2 py-0.5 rounded font-bold">

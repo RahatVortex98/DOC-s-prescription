@@ -361,6 +361,7 @@
                 <textarea wire:model="chief_complaints" rows="3" class="w-full border rounded-md p-2 text-xs" placeholder="e.g. Swelling of body x 1 month, High BP (or click mic 🎙️ to dictate)"></textarea>
             </div>
 
+            @unless(auth()->user()?->isAssistant())
             <!-- On Examination (O/E) -->
             <div class="bg-white rounded-xl shadow-sm border p-3">
                 <div class="flex items-center justify-between mb-1">
@@ -412,6 +413,7 @@
                 </div>
                 <textarea wire:model="diagnosis" rows="2" class="w-full border rounded-md p-2 text-xs font-semibold" placeholder="e.g. Chronic Kidney Disease (Stage 4)"></textarea>
             </div>
+            @endunless
 
             <!-- Investigations -->
             <div class="bg-white rounded-xl shadow-sm border p-3">
