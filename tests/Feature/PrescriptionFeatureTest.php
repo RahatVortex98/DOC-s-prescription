@@ -2,7 +2,9 @@
 
 namespace Tests\Feature;
 
+use App\Livewire\Admin\TenantManager;
 use App\Livewire\AppointmentManager;
+use App\Livewire\Auth\Login;
 use App\Livewire\PrescriptionBuilder;
 use App\Livewire\PrescriptionList;
 use App\Models\Appointment;
@@ -10,6 +12,8 @@ use App\Models\Chamber;
 use App\Models\Medicine;
 use App\Models\Patient;
 use App\Models\Prescription;
+use App\Models\Tenant;
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\File;
 use Livewire\Livewire;
@@ -18,6 +22,38 @@ use Tests\TestCase;
 class PrescriptionFeatureTest extends TestCase
 {
     use RefreshDatabase;
+
+    protected Tenant $tenant;
+
+    protected User $doctor;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->tenant = Tenant::create([
+            'slug' => 'dr-mahbub',
+            'doctor_name' => 'Prof. Dr. Mahbubur Rahman',
+            'bmdc_no' => 'A-45210',
+            'status' => 'active',
+        ]);
+
+        $this->doctor = User::create([
+            'name' => 'Dr. Mahbubur Rahman',
+            'email' => 'mahbub@bikrify.com',
+            'password' => bcrypt('secret123'),
+            'tenant_id' => $this->tenant->id,
+            'role' => 'doctor',
+        ]);
+
+        $this->actingAs($this->doctor);
+    }
+
+    public function test_root_redirects_to_prescription_builder(): void
+    {
+        $response = $this->get('/');
+        $response->assertRedirect(route('prescription.builder'));
+    }
 
     public function test_prescription_builder_page_loads_successfully(): void
     {
@@ -28,7 +64,7 @@ class PrescriptionFeatureTest extends TestCase
             'is_default' => true,
         ]);
 
-        $response = $this->get('/');
+        $response = $this->get(route('prescription.builder'));
 
         $response->assertStatus(200);
         $response->assertSee('Bikrify Prescription Studio');
@@ -45,7 +81,7 @@ class PrescriptionFeatureTest extends TestCase
         ]);
 
         Livewire::test(AppointmentManager::class)
-            ->set('selected_chamber_id', $chamber->id)
+            ->call('selectChamber', $chamber->id)
             ->set('patient_name', 'Mizanur Rahman')
             ->set('patient_age', '48')
             ->set('patient_gender', 'Male')
@@ -56,10 +92,44 @@ class PrescriptionFeatureTest extends TestCase
             ->assertSet('generatedSerial', 1);
 
         $this->assertDatabaseHas('appointments', [
+            'tenant_id' => $this->tenant->id,
             'chamber_id' => $chamber->id,
             'patient_name' => 'Mizanur Rahman',
             'serial_no' => 1,
             'status' => 'waiting',
+        ]);
+    }
+
+    public function test_public_tenant_booking_page_loads_and_books(): void
+    {
+        $this->app['auth']->logout();
+
+        $chamber = Chamber::withoutGlobalScope('tenant')->create([
+            'tenant_id' => $this->tenant->id,
+            'name' => 'Public Consultation Chamber',
+            'doctor_name' => 'Dr. Mahbubur Rahman',
+            'specialty' => 'Nephrology / CKD Specialist',
+            'is_default' => true,
+        ]);
+
+        $response = $this->get('/'.$this->tenant->slug);
+        $response->assertStatus(200);
+        $response->assertSee('Public Consultation Chamber');
+
+        Livewire::test(AppointmentManager::class, ['tenant' => $this->tenant])
+            ->set('patient_name', 'Selim Reza')
+            ->set('patient_age', '35')
+            ->set('patient_gender', 'Male')
+            ->set('patient_phone', '01555667788')
+            ->set('consent', true)
+            ->call('bookAppointment')
+            ->assertSet('generatedSerial', 1);
+
+        $this->assertDatabaseHas('appointments', [
+            'tenant_id' => $this->tenant->id,
+            'chamber_id' => $chamber->id,
+            'patient_name' => 'Selim Reza',
+            'serial_no' => 1,
         ]);
     }
 
@@ -72,7 +142,7 @@ class PrescriptionFeatureTest extends TestCase
             'is_default' => true,
         ]);
 
-        $qrResponse = $this->get('/chambers/'.$chamber->id.'/qr-standee');
+        $qrResponse = $this->get(route('chamber.qr_standee', $chamber->id));
         $qrResponse->assertStatus(200);
         $qrResponse->assertSee('Square Hospital');
         $qrResponse->assertSee('Scan with Phone Camera');
@@ -220,7 +290,7 @@ class PrescriptionFeatureTest extends TestCase
             'gender' => 'Female',
         ]);
 
-        Prescription::create([
+        $rx = Prescription::create([
             'prescription_no' => 'RX-20261109-777',
             'patient_id' => $patient->id,
             'doctor_name' => 'Dr. Mahbubur Rahman',
@@ -228,10 +298,22 @@ class PrescriptionFeatureTest extends TestCase
             'diagnosis' => 'Glomerulonephritis',
         ]);
 
+        $rx->items()->create([
+            'type' => 'Tab.',
+            'medicine_name' => 'Ketosteril',
+            'dosage' => '1+1+1',
+            'duration' => '1 month',
+        ]);
+
         Livewire::test(PrescriptionList::class)
             ->set('search', 'Anowara')
             ->assertSee('RX-20261109-777')
             ->assertSee('Anowara Begum');
+
+        // Test cloning into studio
+        Livewire::test(PrescriptionBuilder::class, ['prescriptionId' => $rx->id])
+            ->assertSet('diagnosis', 'Glomerulonephritis')
+            ->assertSet('items.0.name', 'Ketosteril');
     }
 
     public function test_save_and_print_creates_patient_and_prescription_and_redirects(): void
@@ -262,6 +344,7 @@ class PrescriptionFeatureTest extends TestCase
             ->assertRedirect();
 
         $this->assertDatabaseHas('patients', [
+            'tenant_id' => $this->tenant->id,
             'name' => 'Rahim Ahmed',
             'phone' => '01711223344',
             'age' => 45,
@@ -269,6 +352,7 @@ class PrescriptionFeatureTest extends TestCase
         ]);
 
         $this->assertDatabaseHas('prescriptions', [
+            'tenant_id' => $this->tenant->id,
             'diagnosis' => 'Viral Fever',
             'chamber_name' => 'Banani Chamber',
         ]);
@@ -352,7 +436,7 @@ class PrescriptionFeatureTest extends TestCase
 
     public function test_doctor_dashboard_loads_successfully(): void
     {
-        $response = $this->get('/dashboard');
+        $response = $this->get(route('doctor.dashboard'));
         $response->assertStatus(200);
         $response->assertSee('Doctor Practice Analytics');
     }
@@ -388,5 +472,79 @@ class PrescriptionFeatureTest extends TestCase
         if (File::exists($fullPath)) {
             File::delete($fullPath);
         }
+    }
+
+    public function test_auth_login_and_logout_flow(): void
+    {
+        $this->app['auth']->logout();
+
+        $response = $this->get('/login');
+        $response->assertStatus(200);
+
+        Livewire::test(Login::class)
+            ->set('email', 'mahbub@bikrify.com')
+            ->set('password', 'secret123')
+            ->call('login')
+            ->assertRedirect(route('prescription.builder'));
+
+        $this->assertAuthenticatedAs($this->doctor);
+
+        $logoutResponse = $this->post('/logout');
+        $logoutResponse->assertRedirect(route('login'));
+        $this->assertGuest();
+    }
+
+    public function test_suspended_tenant_user_is_blocked_by_middleware(): void
+    {
+        $this->tenant->update(['status' => 'suspended']);
+
+        $response = $this->get(route('prescription.builder'));
+        $response->assertRedirect(route('login'));
+        $response->assertSessionHasErrors('email');
+    }
+
+    public function test_super_admin_can_provision_new_tenant(): void
+    {
+        $this->app['auth']->logout();
+
+        $superAdmin = User::create([
+            'name' => 'Bikrify Super Admin',
+            'email' => 'admin@bikrify.com',
+            'password' => bcrypt('password123'),
+            'role' => 'super_admin',
+            'tenant_id' => null,
+        ]);
+
+        $this->actingAs($superAdmin);
+
+        $response = $this->get(route('admin.tenants'));
+        $response->assertStatus(200);
+
+        Livewire::test(TenantManager::class)
+            ->set('doctor_name', 'Dr. Farhana Ahmed')
+            ->set('slug', 'dr-farhana')
+            ->set('bmdc_no', 'A-88771')
+            ->set('status', 'active')
+            ->set('doctor_email', 'farhana@cardio.com')
+            ->set('doctor_password', 'secretpass123')
+            ->call('saveTenant');
+
+        $this->assertDatabaseHas('tenants', [
+            'slug' => 'dr-farhana',
+            'doctor_name' => 'Dr. Farhana Ahmed',
+            'bmdc_no' => 'A-88771',
+            'status' => 'active',
+        ]);
+
+        $this->assertDatabaseHas('users', [
+            'email' => 'farhana@cardio.com',
+            'role' => 'doctor',
+        ]);
+    }
+
+    public function test_non_super_admin_cannot_access_super_admin_area(): void
+    {
+        $response = $this->get(route('admin.tenants'));
+        $response->assertStatus(403);
     }
 }

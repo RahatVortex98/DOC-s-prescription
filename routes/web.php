@@ -2,29 +2,61 @@
 
 use App\Http\Controllers\ChamberController;
 use App\Http\Controllers\PrescriptionPrintController;
+use App\Livewire\Admin\TenantManager;
 use App\Livewire\AppointmentManager;
+use App\Livewire\Auth\Login;
 use App\Livewire\DoctorDashboard;
 use App\Livewire\PrescriptionBuilder;
 use App\Livewire\PrescriptionList;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
-Route::get('/', PrescriptionBuilder::class)->name('prescription.builder');
+// Redirect root to main app
+Route::get('/', function () {
+    return redirect()->route('prescription.builder');
+});
 
-Route::get('/dashboard', DoctorDashboard::class)->name('doctor.dashboard');
+// Authentication Routes
+Route::get('/login', Login::class)->name('login')->middleware('guest');
 
-Route::get('/prescriptions', PrescriptionList::class)->name('prescription.list');
+Route::post('/logout', function (Request $request) {
+    Auth::logout();
+    $request->session()->invalidate();
+    $request->session()->regenerateToken();
 
-Route::get('/appointments', AppointmentManager::class)->name('appointment.manager');
+    return redirect()->route('login');
+})->middleware('auth')->name('logout');
 
-Route::get('/book/{chamberId?}', AppointmentManager::class)->name('appointment.public_book');
+// Super-Admin Area (role super_admin only)
+Route::middleware(['auth', 'role.super_admin'])->prefix('admin')->group(function () {
+    Route::get('/tenants', TenantManager::class)->name('admin.tenants');
+});
 
-Route::get('/chambers/{chamber}/qr-standee', [ChamberController::class, 'qrStandee'])->name('chamber.qr_standee');
+// Authenticated Doctor/Staff App Routes
+Route::middleware(['auth', 'tenant.active'])->prefix('app')->group(function () {
+    Route::get('/', PrescriptionBuilder::class)->name('prescription.builder');
 
-Route::get('/prescriptions/{prescription}/print', [PrescriptionPrintController::class, 'show'])
-    ->name('prescription.print');
+    Route::get('/dashboard', DoctorDashboard::class)->name('doctor.dashboard');
 
-Route::get('/prescriptions/{prescription}/pdf', [PrescriptionPrintController::class, 'downloadPdf'])
-    ->name('prescription.pdf');
+    Route::get('/prescriptions', PrescriptionList::class)->name('prescription.list');
 
-Route::get('/prescriptions/{prescription}/investigations', [PrescriptionPrintController::class, 'investigationSlip'])
-    ->name('prescription.investigations');
+    Route::get('/appointments', AppointmentManager::class)->name('appointment.manager');
+
+    Route::get('/chambers/{chamber}/qr-standee', [ChamberController::class, 'qrStandee'])->name('chamber.qr_standee');
+
+    Route::get('/prescriptions/{prescription}/print', [PrescriptionPrintController::class, 'show'])
+        ->name('prescription.print');
+
+    Route::get('/prescriptions/{prescription}/pdf', [PrescriptionPrintController::class, 'downloadPdf'])
+        ->name('prescription.pdf');
+
+    Route::get('/prescriptions/{prescription}/investigations', [PrescriptionPrintController::class, 'investigationSlip'])
+        ->name('prescription.investigations');
+});
+
+// Public Tenant Patient Booking Route (must be registered last)
+Route::get('/{tenant:slug}', AppointmentManager::class)
+    ->where('tenant', '^(?!app$|login$|logout$|livewire$|admin$|api$|up$|build$|storage$|book$)[a-z0-9._-]+$')
+    ->middleware('throttle:30,1')
+    ->name('appointment.public_book');

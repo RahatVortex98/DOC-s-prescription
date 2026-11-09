@@ -93,11 +93,19 @@
                                     {{ $rx->items->count() }} item(s)
                                 </span>
                             </td>
-                            <td class="p-3 text-right space-x-1">
-                                <a href="{{ route('prescription.print', $rx->id) }}" target="_blank" class="inline-block bg-slate-100 hover:bg-slate-200 text-slate-800 px-2.5 py-1 rounded text-xs font-bold transition">
+                            <td class="p-3 text-right space-x-1 whitespace-nowrap">
+                                <a href="{{ route('prescription.builder') }}?clone={{ $rx->id }}" class="inline-block bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-300 px-2 py-1 rounded text-xs font-bold transition" title="Clone / Re-use in Studio">
+                                    ↻ Re-use
+                                </a>
+                                @if($rx->investigations)
+                                    <a href="{{ route('prescription.investigations', $rx->id) }}" target="_blank" class="inline-block bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 px-2 py-1 rounded text-xs font-bold transition" title="Print Lab Slip">
+                                        🧪 Lab
+                                    </a>
+                                @endif
+                                <a href="{{ route('prescription.print', $rx->id) }}" target="_blank" class="inline-block bg-slate-100 hover:bg-slate-200 text-slate-800 px-2 py-1 rounded text-xs font-bold transition">
                                     Print A4
                                 </a>
-                                <a href="{{ route('prescription.pdf', $rx->id) }}" class="inline-block bg-cyan-600 hover:bg-cyan-700 text-white px-2.5 py-1 rounded text-xs font-bold transition">
+                                <a href="{{ route('prescription.pdf', $rx->id) }}" class="inline-block bg-cyan-600 hover:bg-cyan-700 text-white px-2 py-1 rounded text-xs font-bold transition">
                                     PDF
                                 </a>
                             </td>

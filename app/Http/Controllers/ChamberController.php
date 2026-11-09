@@ -9,7 +9,9 @@ class ChamberController extends Controller
 {
     public function qrStandee(Chamber $chamber): View
     {
-        $bookingUrl = route('appointment.public_book', $chamber->id);
+        $chamber->load('tenant');
+        $slug = $chamber->tenant ? $chamber->tenant->slug : 'dr-mahbubur';
+        $bookingUrl = route('appointment.public_book', ['tenant' => $slug, 'chamber' => $chamber->id]);
 
         return view('chambers.qr-standee', [
             'chamber' => $chamber,

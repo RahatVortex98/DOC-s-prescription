@@ -5,13 +5,21 @@ namespace App\Livewire;
 use App\Models\Appointment;
 use App\Models\Chamber;
 use App\Models\Patient;
+use App\Models\Tenant;
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\RateLimiter;
+use Illuminate\Validation\Rule;
+use Livewire\Attributes\Locked;
 use Livewire\Component;
 
 class AppointmentManager extends Component
 {
+    #[Locked]
     public ?int $selected_chamber_id = null;
+
+    public ?Tenant $tenant = null;
 
     public string $selected_date = '';
 
@@ -30,31 +38,81 @@ class AppointmentManager extends Component
 
     public bool $is_public_portal = false;
 
+    public bool $consent = false;
+
     public ?string $successMessage = null;
 
     public ?int $generatedSerial = null;
 
-    public function mount(?int $chamberId = null): void
+    public function mount(?Tenant $tenant = null, ?int $chamberId = null): void
     {
-        $this->is_public_portal = request()->routeIs('appointment.public_book');
         $this->selected_date = today()->toDateString();
 
-        if ($chamberId) {
-            $this->selected_chamber_id = $chamberId;
+        if ($tenant && $tenant->exists) {
+            if ($tenant->isSuspended()) {
+                abort(403, 'This clinic is currently suspended. Please contact Bikrify support.');
+            }
+
+            $this->tenant = $tenant;
+            $this->is_public_portal = true;
+
+            $chamberQuery = request()->query('chamber');
+            if ($chamberQuery) {
+                $found = Chamber::withoutGlobalScope('tenant')
+                    ->where('tenant_id', $tenant->id)
+                    ->find($chamberQuery);
+                if ($found) {
+                    $this->selected_chamber_id = $found->id;
+                }
+            }
+
+            if (! $this->selected_chamber_id) {
+                $default = Chamber::withoutGlobalScope('tenant')
+                    ->where('tenant_id', $tenant->id)
+                    ->where('is_default', true)
+                    ->first()
+                    ?: Chamber::withoutGlobalScope('tenant')
+                        ->where('tenant_id', $tenant->id)
+                        ->first();
+
+                $this->selected_chamber_id = $default?->id;
+            }
         } else {
-            $chamber = Chamber::where('is_default', true)->first() ?: Chamber::first();
-            $this->selected_chamber_id = $chamber ? $chamber->id : null;
+            $this->is_public_portal = false;
+
+            if ($chamberId) {
+                $chamber = Chamber::findOrFail($chamberId);
+                $this->selected_chamber_id = $chamber->id;
+            } else {
+                $chamber = Chamber::where('is_default', true)->first() ?: Chamber::first();
+                $this->selected_chamber_id = $chamber?->id;
+            }
         }
     }
 
     public function getChambersProperty(): Collection
     {
+        if ($this->is_public_portal && $this->tenant) {
+            return Chamber::withoutGlobalScope('tenant')
+                ->where('tenant_id', $this->tenant->id)
+                ->orderBy('name')
+                ->get();
+        }
+
         return Chamber::orderBy('name')->get();
     }
 
     public function selectChamber(int $id): void
     {
-        $this->selected_chamber_id = $id;
+        if ($this->is_public_portal && $this->tenant) {
+            $chamber = Chamber::withoutGlobalScope('tenant')
+                ->where('tenant_id', $this->tenant->id)
+                ->findOrFail($id);
+        } else {
+            $chamber = Chamber::findOrFail($id);
+        }
+
+        $this->selected_chamber_id = $chamber->id;
         $this->resetBookingForm();
     }
 
@@ -66,91 +124,150 @@ class AppointmentManager extends Component
         $this->patient_gender = 'Male';
         $this->appointment_time = '';
         $this->notes = '';
+        $this->consent = false;
         $this->successMessage = null;
         $this->generatedSerial = null;
     }
 
     public function bookAppointment(): void
     {
-        $this->validate([
-            'selected_chamber_id' => 'required|exists:chambers,id',
+        $rules = [
             'patient_name' => 'required|string|max:150',
             'patient_age' => 'required|numeric|min:0|max:130',
             'patient_gender' => 'required|in:Male,Female,Other',
             'patient_phone' => 'nullable|string|max:20',
-            'selected_date' => 'required|date',
-        ]);
+            'selected_date' => 'required|date|after_or_equal:today',
+        ];
 
-        // Auto calculate next serial number for this chamber on this date
-        $lastSerial = Appointment::where('chamber_id', $this->selected_chamber_id)
-            ->whereDate('appointment_date', $this->selected_date)
-            ->max('serial_no') ?? 0;
+        if ($this->is_public_portal && $this->tenant) {
+            $rules['consent'] = 'accepted';
+            $rules['selected_chamber_id'] = [
+                'required',
+                Rule::exists('chambers', 'id')->where('tenant_id', $this->tenant->id),
+            ];
 
-        $serial = $lastSerial + 1;
+            // Rate limiter per IP: max 5 bookings per 60 seconds
+            $ipKey = 'public-book:'.request()->ip();
+            if (! RateLimiter::attempt($ipKey, 5, function () {}, 60)) {
+                $seconds = RateLimiter::availableIn($ipKey);
+                $this->addError('booking_limit', "Too many booking requests. Please wait {$seconds} seconds.");
 
-        // Associate or find patient if phone exists
-        $patientId = null;
-        $phone = trim($this->patient_phone);
-        if ($phone !== '') {
-            $patient = Patient::where('phone', $phone)->first();
-            if ($patient) {
-                $patientId = $patient->id;
-            } else {
-                $newPatient = Patient::create([
-                    'patient_id' => 'PID-'.strtoupper(bin2hex(random_bytes(3))),
-                    'name' => $this->patient_name,
-                    'phone' => $phone,
-                    'age' => (int) $this->patient_age,
-                    'gender' => $this->patient_gender,
-                ]);
-                $patientId = $newPatient->id;
+                return;
             }
+        } else {
+            $rules['selected_chamber_id'] = 'required|exists:chambers,id';
         }
 
-        $appointment = Appointment::create([
-            'chamber_id' => $this->selected_chamber_id,
-            'patient_id' => $patientId,
-            'serial_no' => $serial,
-            'patient_name' => $this->patient_name,
-            'patient_phone' => $phone ?: null,
-            'patient_age' => (int) $this->patient_age,
-            'patient_gender' => $this->patient_gender,
-            'appointment_date' => $this->selected_date,
-            'appointment_time' => $this->appointment_time ?: null,
-            'status' => 'waiting',
-            'notes' => $this->notes ?: null,
+        $this->validate($rules, [
+            'consent.accepted' => 'You must agree to the processing of personal data to book an appointment.',
+            'selected_date.after_or_equal' => 'Appointment date cannot be in the past.',
         ]);
 
-        $this->generatedSerial = $serial;
-        $this->successMessage = "Appointment confirmed! Serial #{$serial} for {$this->patient_name}.";
+        $tenantId = $this->is_public_portal && $this->tenant
+            ? $this->tenant->id
+            : (auth()->check() ? auth()->user()->tenant_id : null);
+
+        $chamberId = $this->selected_chamber_id;
+        $date = $this->selected_date;
+        $phone = trim($this->patient_phone);
+
+        $appointment = DB::transaction(function () use ($tenantId, $chamberId, $date, $phone) {
+            // Lock max serial for this chamber on this date
+            $lastSerial = Appointment::withoutGlobalScope('tenant')
+                ->where('chamber_id', $chamberId)
+                ->whereDate('appointment_date', $date)
+                ->lockForUpdate()
+                ->max('serial_no') ?? 0;
+
+            $serial = $lastSerial + 1;
+
+            $patientId = null;
+            if ($phone !== '') {
+                $patient = Patient::withoutGlobalScope('tenant')
+                    ->where('tenant_id', $tenantId)
+                    ->where('phone', $phone)
+                    ->first();
+
+                if ($patient) {
+                    $patientId = $patient->id;
+                } else {
+                    $newPatient = new Patient([
+                        'patient_id' => 'PID-'.strtoupper(bin2hex(random_bytes(3))),
+                        'name' => $this->patient_name,
+                        'phone' => $phone,
+                        'age' => (int) $this->patient_age,
+                        'gender' => $this->patient_gender,
+                    ]);
+                    $newPatient->tenant_id = $tenantId;
+                    $newPatient->save();
+                    $patientId = $newPatient->id;
+                }
+            }
+
+            $app = new Appointment([
+                'chamber_id' => $chamberId,
+                'patient_id' => $patientId,
+                'serial_no' => $serial,
+                'patient_name' => $this->patient_name,
+                'patient_phone' => $phone ?: null,
+                'patient_age' => (int) $this->patient_age,
+                'patient_gender' => $this->patient_gender,
+                'appointment_date' => $date,
+                'appointment_time' => $this->appointment_time ?: null,
+                'status' => 'waiting',
+                'notes' => $this->notes ?: null,
+            ]);
+            $app->tenant_id = $tenantId;
+            $app->save();
+
+            return $app;
+        }, 5);
+
+        $this->generatedSerial = $appointment->serial_no;
+        $this->successMessage = "Appointment confirmed! Serial #{$appointment->serial_no} for {$this->patient_name}.";
 
         $this->patient_name = '';
         $this->patient_phone = '';
         $this->patient_age = '';
         $this->notes = '';
+        $this->consent = false;
     }
 
     public function updateStatus(int $appointmentId, string $status): void
     {
-        $appointment = Appointment::find($appointmentId);
-        if ($appointment && in_array($status, ['waiting', 'with_doctor', 'completed', 'cancelled'])) {
+        $appointment = Appointment::findOrFail($appointmentId);
+        if (in_array($status, ['waiting', 'with_doctor', 'completed', 'cancelled'])) {
             $appointment->update(['status' => $status]);
         }
     }
 
     public function deleteAppointment(int $appointmentId): void
     {
-        Appointment::destroy($appointmentId);
+        $appointment = Appointment::findOrFail($appointmentId);
+        $appointment->delete();
     }
 
     public function render(): View
     {
-        $activeChamber = Chamber::find($this->selected_chamber_id);
+        if ($this->is_public_portal && $this->tenant) {
+            $activeChamber = $this->selected_chamber_id
+                ? Chamber::withoutGlobalScope('tenant')->where('tenant_id', $this->tenant->id)->find($this->selected_chamber_id)
+                : null;
 
-        $todayAppointments = Appointment::where('chamber_id', $this->selected_chamber_id)
-            ->whereDate('appointment_date', $this->selected_date)
-            ->orderBy('serial_no')
-            ->get();
+            $todayAppointments = Appointment::withoutGlobalScope('tenant')
+                ->where('tenant_id', $this->tenant->id)
+                ->where('chamber_id', $this->selected_chamber_id)
+                ->whereDate('appointment_date', $this->selected_date)
+                ->orderBy('serial_no')
+                ->get();
+        } else {
+            $activeChamber = Chamber::find($this->selected_chamber_id);
+
+            $todayAppointments = Appointment::where('chamber_id', $this->selected_chamber_id)
+                ->whereDate('appointment_date', $this->selected_date)
+                ->orderBy('serial_no')
+                ->get();
+        }
 
         $stats = [
             'total' => $todayAppointments->count(),

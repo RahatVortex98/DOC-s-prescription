@@ -9,11 +9,13 @@ use App\Models\Patient;
 use App\Models\Prescription;
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Collection;
+use Livewire\Attributes\Locked;
 use Livewire\Component;
 
 class PrescriptionBuilder extends Component
 {
     // Patient Details
+    #[Locked]
     public ?int $selected_patient_id = null;
 
     public bool $is_existing_patient = false;
@@ -41,9 +43,11 @@ class PrescriptionBuilder extends Component
     public string $patient_phone = '';
 
     // Active Appointment Tracking
+    #[Locked]
     public ?int $current_appointment_id = null;
 
     // Doctor & Chamber Details
+    #[Locked]
     public ?int $selected_chamber_id = null;
 
     public string $doctor_name = 'Prof. Dr. Mahbubur Rahman';
@@ -420,11 +424,44 @@ class PrescriptionBuilder extends Component
         ],
     ];
 
-    public function mount(): void
+    public function mount(?int $prescriptionId = null): void
     {
         $chamber = Chamber::where('is_default', true)->first() ?: Chamber::first();
         if ($chamber) {
             $this->applyChamber($chamber);
+        }
+
+        $cloneId = $prescriptionId ?: request()->query('clone');
+        if ($cloneId) {
+            $cloneRx = Prescription::with(['patient', 'items', 'chamber'])->find($cloneId);
+            if ($cloneRx) {
+                if ($cloneRx->patient) {
+                    $this->selectPatient($cloneRx->patient->id);
+                }
+                if ($cloneRx->chamber) {
+                    $this->applyChamber($cloneRx->chamber);
+                }
+                $this->chief_complaints = $cloneRx->chief_complaints ?? '';
+                $this->clinical_findings = $cloneRx->clinical_findings ?? '';
+                $this->diagnosis = $cloneRx->diagnosis ?? '';
+                $this->investigations = $cloneRx->investigations ?? '';
+                $this->advice = $cloneRx->advice ?? '';
+
+                $this->items = [];
+                foreach ($cloneRx->items as $item) {
+                    $this->items[] = [
+                        'type' => $item->type ?? 'Tab.',
+                        'name' => $item->medicine_name,
+                        'generic' => $item->generic_name ?? '',
+                        'strength' => $item->strength ?? '',
+                        'dosage' => $item->dosage,
+                        'duration' => $item->duration,
+                        'instruction' => $item->instructions ?? 'After meal (খাবার পরে)',
+                    ];
+                }
+
+                return;
+            }
         }
 
         $this->addItem([
@@ -458,10 +495,8 @@ class PrescriptionBuilder extends Component
 
     public function selectChamber(int $id): void
     {
-        $chamber = Chamber::find($id);
-        if ($chamber) {
-            $this->applyChamber($chamber);
-        }
+        $chamber = Chamber::findOrFail($id);
+        $this->applyChamber($chamber);
     }
 
     protected function applyChamber(Chamber $chamber): void
@@ -484,10 +519,7 @@ class PrescriptionBuilder extends Component
     // Call Patient from Today's Queue
     public function callQueuePatient(int $appointmentId): void
     {
-        $appointment = Appointment::find($appointmentId);
-        if (! $appointment) {
-            return;
-        }
+        $appointment = Appointment::findOrFail($appointmentId);
 
         $this->current_appointment_id = $appointment->id;
         $appointment->update(['status' => 'with_doctor']);
@@ -633,10 +665,7 @@ class PrescriptionBuilder extends Component
 
     public function openEditChamberModal(int $id): void
     {
-        $chamber = Chamber::find($id);
-        if (! $chamber) {
-            return;
-        }
+        $chamber = Chamber::findOrFail($id);
 
         $this->chamber_form_id = $chamber->id;
         $this->chamber_form_name = $chamber->name;
@@ -683,11 +712,9 @@ class PrescriptionBuilder extends Component
         ];
 
         if ($this->chamber_form_id) {
-            $chamber = Chamber::find($this->chamber_form_id);
-            if ($chamber) {
-                $chamber->update($data);
-                $this->applyChamber($chamber);
-            }
+            $chamber = Chamber::findOrFail($this->chamber_form_id);
+            $chamber->update($data);
+            $this->applyChamber($chamber);
         } else {
             $chamber = Chamber::create($data);
             $this->applyChamber($chamber);
@@ -716,10 +743,7 @@ class PrescriptionBuilder extends Component
 
     public function selectPatient(int $id): void
     {
-        $patient = Patient::with(['prescriptions.items'])->find($id);
-        if (! $patient) {
-            return;
-        }
+        $patient = Patient::with(['prescriptions.items'])->findOrFail($id);
 
         $this->selected_patient_id = $patient->id;
         $this->patient_name = $patient->name;
@@ -753,8 +777,8 @@ class PrescriptionBuilder extends Component
 
     public function repeatPreviousPrescription(int $prescriptionId): void
     {
-        $prescription = Prescription::with('items')->find($prescriptionId);
-        if (! $prescription || $prescription->items->isEmpty()) {
+        $prescription = Prescription::with('items')->findOrFail($prescriptionId);
+        if ($prescription->items->isEmpty()) {
             return;
         }
 
@@ -872,15 +896,13 @@ class PrescriptionBuilder extends Component
         ]);
 
         if ($this->selected_patient_id) {
-            $patient = Patient::find($this->selected_patient_id);
-            if ($patient) {
-                $patient->update([
-                    'name' => $this->patient_name,
-                    'age' => (int) $this->patient_age,
-                    'gender' => $this->patient_gender,
-                    'phone' => $this->patient_phone ?: $patient->phone,
-                ]);
-            }
+            $patient = Patient::findOrFail($this->selected_patient_id);
+            $patient->update([
+                'name' => $this->patient_name,
+                'age' => (int) $this->patient_age,
+                'gender' => $this->patient_gender,
+                'phone' => $this->patient_phone ?: $patient->phone,
+            ]);
         } else {
             $phone = trim($this->patient_phone);
             if ($phone !== '') {
@@ -937,14 +959,12 @@ class PrescriptionBuilder extends Component
 
         // If this prescription was created for a queue appointment, mark it completed!
         if ($this->current_appointment_id) {
-            $appointment = Appointment::find($this->current_appointment_id);
-            if ($appointment) {
-                $appointment->update([
-                    'status' => 'completed',
-                    'prescription_id' => $prescription->id,
-                    'patient_id' => $patient->id,
-                ]);
-            }
+            $appointment = Appointment::findOrFail($this->current_appointment_id);
+            $appointment->update([
+                'status' => 'completed',
+                'prescription_id' => $prescription->id,
+                'patient_id' => $patient->id,
+            ]);
         }
 
         return redirect()->route('prescription.print', $prescription->id);

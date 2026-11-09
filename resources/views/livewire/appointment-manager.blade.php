@@ -96,6 +96,20 @@
                             <textarea wire:model="notes" rows="2" class="w-full border rounded-lg p-2 text-xs bg-gray-50 focus:bg-white" placeholder="e.g. High fever, blood pressure checkup, kidney consultation"></textarea>
                         </div>
 
+                        <div>
+                            <label class="flex items-start gap-2 cursor-pointer">
+                                <input type="checkbox" wire:model="consent" class="mt-0.5 rounded border-slate-300 text-cyan-700 focus:ring-cyan-600">
+                                <span class="text-[11px] text-gray-600">I agree to the processing of my personal data for appointment scheduling. *</span>
+                            </label>
+                            @error('consent') <span class="text-rose-600 text-[11px] block mt-0.5 font-medium">{{ $message }}</span> @enderror
+                        </div>
+
+                        @error('booking_limit')
+                            <div class="p-2.5 bg-rose-50 border border-rose-200 text-rose-700 rounded-lg text-xs font-semibold">
+                                {{ $message }}
+                            </div>
+                        @enderror
+
                         <button type="submit" class="w-full bg-cyan-700 hover:bg-cyan-800 text-white font-black py-3 px-4 rounded-xl text-xs shadow-md transition cursor-pointer">
                             Confirm Appointment & Get Serial Token
                         </button>

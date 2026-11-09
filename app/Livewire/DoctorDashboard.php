@@ -37,7 +37,8 @@ class DoctorDashboard extends Component
             ->get();
 
         // Top Medicines
-        $topMedicines = PrescriptionItem::select('medicine_name', 'type', DB::raw('count(*) as count'))
+        $topMedicines = PrescriptionItem::whereHas('prescription')
+            ->select('medicine_name', 'type', DB::raw('count(*) as count'))
             ->groupBy('medicine_name', 'type')
             ->orderByDesc('count')
             ->limit(5)

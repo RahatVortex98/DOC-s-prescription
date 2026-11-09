@@ -2,18 +2,20 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\BelongsToTenant;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Chamber extends Model
 {
-    use HasFactory;
+    use BelongsToTenant, HasFactory;
 
     /**
      * @var list<string>
      */
     protected $fillable = [
+        'tenant_id',
         'name',
         'hospital_affiliation',
         'doctor_name',
