@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <title>Prescription - {{ $prescription->prescription_no }}</title>
     <style>
-        @page { size: A4 portrait; margin: 12mm 15mm; }
+        @page { size: A4 portrait; margin: 10mm 15mm; }
         body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #1f2937; margin: 0; padding: 0; font-size: 13px; line-height: 1.4; }
         table { width: 100%; border-collapse: collapse; }
         .header-table { border-bottom: 2px solid #0891b2; padding-bottom: 10px; margin-bottom: 10px; }
@@ -24,16 +24,33 @@
         .med-title { font-weight: bold; font-size: 13px; }
         .med-detail { font-size: 12px; color: #4b5563; padding-left: 15px; margin-top: 2px; }
         .footer-table { margin-top: 30px; border-top: 1px dashed #cbd5e1; padding-top: 10px; font-size: 11px; color: #64748b; }
+        
+        /* Pre-printed Pad Letterhead Mode */
+        body.letterhead-mode .header-table { display: none; }
+        body.letterhead-mode .letterhead-spacer { display: block !important; height: 50mm; }
+
         @media print {
-            .no-print { display: none; }
+            .no-print { display: none !important; }
         }
     </style>
 </head>
 <body>
-    <div class="no-print" style="background:#0891b2; padding:10px 20px; text-align:right; margin-bottom:20px;">
-        <button onclick="window.print()" style="padding:6px 14px; background:#fff; color:#0891b2; font-weight:bold; border:none; border-radius:4px; cursor:pointer;">Print Now</button>
-        <a href="{{ route('prescription.pdf', $prescription->id) }}" style="padding:6px 14px; background:#0e7490; color:#fff; font-weight:bold; text-decoration:none; border-radius:4px; margin-left:10px;">Download PDF</a>
+    <div class="no-print" style="background:#0891b2; padding:10px 20px; display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; color:#fff;">
+        <div style="font-weight:bold; font-size:13px;">
+            Prescription #{{ $prescription->prescription_no }} &nbsp;|&nbsp; {{ $prescription->patient->name }}
+        </div>
+        <div>
+            <label style="margin-right:15px; font-size:12px; cursor:pointer;">
+                <input type="checkbox" id="togglePad" onchange="document.body.classList.toggle('letterhead-mode', this.checked)">
+                Pre-printed Pad Mode (Hide Header)
+            </label>
+            <button onclick="window.print()" style="padding:6px 14px; background:#fff; color:#0891b2; font-weight:bold; border:none; border-radius:4px; cursor:pointer;">Print Now</button>
+            <a href="{{ route('prescription.pdf', $prescription->id) }}" style="padding:6px 14px; background:#0e7490; color:#fff; font-weight:bold; text-decoration:none; border-radius:4px; margin-left:10px;">Download PDF</a>
+            <a href="{{ route('prescription.builder') }}" style="padding:6px 14px; background:#164e63; color:#fff; font-weight:bold; text-decoration:none; border-radius:4px; margin-left:10px;">Back to Studio</a>
+        </div>
     </div>
+
+    <div class="letterhead-spacer" style="display:none;"></div>
 
     <!-- Chamber & Doctor Header Table -->
     <table class="header-table">
@@ -44,6 +61,9 @@
                 @if($prescription->doctor_designation)
                     <div class="doc-desig">{{ $prescription->doctor_designation }}</div>
                 @endif
+                @if($prescription->chamber && $prescription->chamber->specialty)
+                    <div style="font-size: 11px; color: #0891b2; font-weight: bold; margin-top: 2px;">Specialty: {{ $prescription->chamber->specialty }}</div>
+                @endif
                 <div style="font-size: 11px; color: #6b7280; margin-top: 3px;">Bikrify Verified Medical Practitioner</div>
             </td>
             <td style="width: 45%; vertical-align: top; text-align: right;">
@@ -51,8 +71,14 @@
                 @if($prescription->chamber_address)
                     <div class="chamber-info">{{ $prescription->chamber_address }}</div>
                 @endif
+                @if($prescription->chamber && $prescription->chamber->room_number)
+                    <div class="chamber-info">Room/Chamber: {{ $prescription->chamber->room_number }}</div>
+                @endif
                 @if($prescription->chamber_phone)
-                    <div class="chamber-info">Contact / Serial: {{ $prescription->chamber_phone }}</div>
+                    <div class="chamber-info">Serial Hotline: {{ $prescription->chamber_phone }}</div>
+                @endif
+                @if($prescription->chamber && $prescription->chamber->whatsapp_number)
+                    <div class="chamber-info">WhatsApp Serial: {{ $prescription->chamber->whatsapp_number }}</div>
                 @endif
                 @if($prescription->chamber_visiting_hours)
                     <div class="chamber-info">Hours: {{ $prescription->chamber_visiting_hours }}</div>
@@ -121,7 +147,7 @@
                 @endforeach
 
                 @if($prescription->advice)
-                    <div class="section-title" style="margin-top: 25px;">Advice</div>
+                    <div class="section-title" style="margin-top: 25px;">Doctor's Advice</div>
                     <div style="white-space: pre-line;">{{ $prescription->advice }}</div>
                 @endif
             </td>

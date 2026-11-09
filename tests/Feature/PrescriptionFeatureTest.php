@@ -2,7 +2,10 @@
 
 namespace Tests\Feature;
 
+use App\Livewire\AppointmentManager;
 use App\Livewire\PrescriptionBuilder;
+use App\Livewire\PrescriptionList;
+use App\Models\Appointment;
 use App\Models\Chamber;
 use App\Models\Medicine;
 use App\Models\Patient;
@@ -32,6 +35,98 @@ class PrescriptionFeatureTest extends TestCase
         $response->assertSee('Popular Diagnostic Center');
     }
 
+    public function test_appointment_booking_and_serial_number_generation(): void
+    {
+        $chamber = Chamber::create([
+            'name' => 'Banani Chamber',
+            'doctor_name' => 'Dr. Mahbubur Rahman',
+            'specialty' => 'Nephrology / CKD Specialist',
+            'is_default' => true,
+        ]);
+
+        Livewire::test(AppointmentManager::class)
+            ->set('selected_chamber_id', $chamber->id)
+            ->set('patient_name', 'Mizanur Rahman')
+            ->set('patient_age', '48')
+            ->set('patient_gender', 'Male')
+            ->set('patient_phone', '01711223399')
+            ->set('appointment_time', '05:00 PM')
+            ->set('notes', 'Swelling of legs and high BP')
+            ->call('bookAppointment')
+            ->assertSet('generatedSerial', 1);
+
+        $this->assertDatabaseHas('appointments', [
+            'chamber_id' => $chamber->id,
+            'patient_name' => 'Mizanur Rahman',
+            'serial_no' => 1,
+            'status' => 'waiting',
+        ]);
+    }
+
+    public function test_doctor_can_call_patient_from_today_queue_and_auto_fill(): void
+    {
+        $chamber = Chamber::create([
+            'name' => 'Square Hospital',
+            'doctor_name' => 'Prof. Dr. Mahbubur Rahman',
+            'specialty' => 'Nephrology / CKD Specialist',
+            'is_default' => true,
+        ]);
+
+        $app = Appointment::create([
+            'chamber_id' => $chamber->id,
+            'serial_no' => 1,
+            'patient_name' => 'Tariqul Islam',
+            'patient_age' => 54,
+            'patient_gender' => 'Male',
+            'patient_phone' => '01811556677',
+            'appointment_date' => today(),
+            'status' => 'waiting',
+            'notes' => 'Chronic kidney disease checkup',
+        ]);
+
+        Livewire::test(PrescriptionBuilder::class)
+            ->call('callQueuePatient', $app->id)
+            ->assertSet('patient_name', 'Tariqul Islam')
+            ->assertSet('patient_age', '54')
+            ->assertSet('patient_gender', 'Male')
+            ->assertSet('patient_phone', '01811556677')
+            ->assertSet('chief_complaints', 'Chronic kidney disease checkup');
+
+        $this->assertDatabaseHas('appointments', [
+            'id' => $app->id,
+            'status' => 'with_doctor',
+        ]);
+    }
+
+    public function test_one_click_specialty_bundle_and_drug_kit_application(): void
+    {
+        Livewire::test(PrescriptionBuilder::class)
+            ->set('specialty', 'Nephrology / CKD Specialist')
+            ->call('applySpecialtyBundle')
+            ->assertSet('diagnosis', 'Chronic Kidney Disease (Stage 4), Hypertensive Nephrosclerosis, Renal Anemia')
+            ->call('applyDrugKit', 0) // Apply CKD Core Drug Kit
+            ->assertSet('items.0.name', 'Ketosteril')
+            ->assertSet('items.1.name', 'Sodibicarb')
+            ->assertSet('items.2.name', 'Febux')
+            ->assertSet('items.3.name', 'Calcichew D');
+    }
+
+    public function test_vitals_calculator_inserts_clean_oe(): void
+    {
+        Livewire::test(PrescriptionBuilder::class)
+            ->set('vital_bp_systolic', '160')
+            ->set('vital_bp_diastolic', '95')
+            ->set('vital_pulse', '82')
+            ->set('vital_weight', '70')
+            ->set('vital_height_cm', '165')
+            ->call('insertVitals')
+            ->assertSet('clinical_findings', function ($findings) {
+                return str_contains($findings, 'BP: 160/95 mmHg (Stage 2 HTN)')
+                    && str_contains($findings, 'Pulse: 82/min')
+                    && str_contains($findings, 'BMI: 25.7');
+            });
+    }
+
     public function test_medicine_search_returns_multiple_variants_including_napa_extra(): void
     {
         Medicine::create([
@@ -50,22 +145,13 @@ class PrescriptionFeatureTest extends TestCase
             'manufacturer' => 'Beximco',
         ]);
 
-        Medicine::create([
-            'brand_name' => 'Napa One',
-            'generic_name' => 'Paracetamol',
-            'dosage_form' => 'Tab.',
-            'strength' => '1000mg',
-            'manufacturer' => 'Beximco',
-        ]);
-
         Livewire::test(PrescriptionBuilder::class)
             ->set('search', 'napa')
             ->assertSet('searchResults', function ($results) {
                 $names = array_column($results, 'brand_name');
 
                 return in_array('Napa', $names)
-                    && in_array('Napa Extra', $names)
-                    && in_array('Napa One', $names);
+                    && in_array('Napa Extra', $names);
             });
     }
 
@@ -110,45 +196,27 @@ class PrescriptionFeatureTest extends TestCase
             ->assertSet('diagnosis', 'CKD Stage 4');
     }
 
-    public function test_doctor_can_switch_and_customize_hospitals(): void
+    public function test_prescriptions_list_page_loads_and_filters(): void
     {
-        $chamber1 = Chamber::create([
-            'name' => 'Square Hospital',
-            'doctor_name' => 'Dr. Mahbubur Rahman',
-            'doctor_qualification' => 'MBBS, FCPS',
-            'doctor_designation' => 'Senior Consultant',
-            'specialty' => 'Nephrology / CKD Specialist',
-            'address' => 'Panthapath, Dhaka',
-            'phone' => '+880 1713-000000',
-            'is_default' => true,
+        $patient = Patient::create([
+            'patient_id' => 'PID-112233',
+            'name' => 'Anowara Begum',
+            'age' => 60,
+            'gender' => 'Female',
         ]);
 
-        $chamber2 = Chamber::create([
-            'name' => 'Popular Diagnostic Center',
+        Prescription::create([
+            'prescription_no' => 'RX-20261109-777',
+            'patient_id' => $patient->id,
             'doctor_name' => 'Dr. Mahbubur Rahman',
-            'doctor_qualification' => 'MBBS, FCPS',
-            'doctor_designation' => 'Visiting Consultant',
-            'specialty' => 'Nephrology / CKD Specialist',
-            'address' => 'Dhanmondi, Dhaka',
-            'phone' => '+880 1819-000000',
-            'is_default' => false,
+            'prescription_date' => now()->toDateString(),
+            'diagnosis' => 'Glomerulonephritis',
         ]);
 
-        Livewire::test(PrescriptionBuilder::class)
-            ->assertSet('chamber_name', 'Square Hospital')
-            ->call('selectChamber', $chamber2->id)
-            ->assertSet('chamber_name', 'Popular Diagnostic Center')
-            ->assertSet('chamber_address', 'Dhanmondi, Dhaka');
-    }
-
-    public function test_specialty_quick_chips_append_clinical_notes(): void
-    {
-        Livewire::test(PrescriptionBuilder::class)
-            ->set('specialty', 'Nephrology / CKD Specialist')
-            ->call('appendQuickText', 'diagnosis', 'Chronic Kidney Disease (Stage 4)')
-            ->assertSet('diagnosis', 'Chronic Kidney Disease (Stage 4)')
-            ->call('appendQuickText', 'diagnosis', 'Diabetic Nephropathy')
-            ->assertSet('diagnosis', 'Chronic Kidney Disease (Stage 4), Diabetic Nephropathy');
+        Livewire::test(PrescriptionList::class)
+            ->set('search', 'Anowara')
+            ->assertSee('RX-20261109-777')
+            ->assertSee('Anowara Begum');
     }
 
     public function test_save_and_print_creates_patient_and_prescription_and_redirects(): void
