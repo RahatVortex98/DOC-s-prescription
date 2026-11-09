@@ -3,11 +3,14 @@
 use App\Http\Controllers\ChamberController;
 use App\Http\Controllers\PrescriptionPrintController;
 use App\Livewire\AppointmentManager;
+use App\Livewire\DoctorDashboard;
 use App\Livewire\PrescriptionBuilder;
 use App\Livewire\PrescriptionList;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', PrescriptionBuilder::class)->name('prescription.builder');
+
+Route::get('/dashboard', DoctorDashboard::class)->name('doctor.dashboard');
 
 Route::get('/prescriptions', PrescriptionList::class)->name('prescription.list');
 

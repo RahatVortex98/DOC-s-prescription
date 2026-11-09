@@ -350,6 +350,13 @@ class PrescriptionFeatureTest extends TestCase
         $response->assertHeader('content-type', 'application/pdf');
     }
 
+    public function test_doctor_dashboard_loads_successfully(): void
+    {
+        $response = $this->get('/dashboard');
+        $response->assertStatus(200);
+        $response->assertSee('Doctor Practice Analytics');
+    }
+
     public function test_import_medicines_command(): void
     {
         $tempCsv = 'database/data/test_medicines.csv';
