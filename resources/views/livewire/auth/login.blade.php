@@ -14,47 +14,33 @@
 
     <div class="mt-6 sm:mx-auto sm:w-full sm:max-w-md">
         <div class="bg-white py-7 px-5 sm:px-8 shadow-xl rounded-2xl border border-slate-200">
-            <!-- Demo Quick Access Panel -->
-            <div class="mb-6 p-3.5 bg-gradient-to-r from-blue-50 to-orange-50 border border-blue-200/80 rounded-xl">
-                <div class="flex items-center justify-between mb-2">
-                    <span class="text-xs font-black uppercase text-[#1e3fae] flex items-center gap-1.5">
-                        <span class="w-2 h-2 rounded-full bg-[#ff6200] animate-pulse"></span>
-                        ⚡ 1-Click Demo Login
-                    </span>
-                    <span class="text-[10px] text-slate-500 font-semibold">Ready to Test</span>
+            <!-- Demo Quick Access Panel (Doctor Demo Only) -->
+            <div class="mb-5 p-4 bg-gradient-to-r from-blue-50/90 via-slate-50 to-orange-50/80 border border-blue-200/90 rounded-2xl text-center shadow-xs">
+                <div class="flex items-center justify-center gap-1.5 mb-1.5">
+                    <span class="w-2 h-2 rounded-full bg-[#ff6200] animate-pulse"></span>
+                    <span class="text-xs font-black uppercase text-[#1e3fae] tracking-wide">Doctor Interactive Demo</span>
                 </div>
-                <div class="grid grid-cols-3 gap-2">
-                    <button
-                        type="button"
-                        wire:click="loginAsDemo('doctor')"
-                        class="bg-[#1e3fae] hover:bg-[#173087] text-white text-[11px] font-bold py-2 px-2 rounded-lg transition shadow-xs flex flex-col items-center justify-center cursor-pointer"
-                        title="Sign in as Dr. Mahbubur Rahman"
-                    >
-                        <span>🩺 Doctor</span>
-                        <span class="text-[9px] opacity-80 font-normal">Full Studio</span>
-                    </button>
-                    <button
-                        type="button"
-                        wire:click="loginAsDemo('assistant')"
-                        class="bg-slate-700 hover:bg-slate-800 text-white text-[11px] font-bold py-2 px-2 rounded-lg transition shadow-xs flex flex-col items-center justify-center cursor-pointer"
-                        title="Sign in as Clinic Receptionist"
-                    >
-                        <span>📋 Assistant</span>
-                        <span class="text-[9px] opacity-80 font-normal">Queue Desk</span>
-                    </button>
-                    <button
-                        type="button"
-                        wire:click="loginAsDemo('super_admin')"
-                        class="bg-[#ff6200] hover:bg-[#ea580c] text-white text-[11px] font-bold py-2 px-2 rounded-lg transition shadow-xs flex flex-col items-center justify-center cursor-pointer"
-                        title="Sign in as Bikrify Super Admin"
-                    >
-                        <span>🛡️ Admin</span>
-                        <span class="text-[9px] opacity-80 font-normal">Governance</span>
-                    </button>
+                <p class="text-[11px] text-slate-600 mb-3 font-medium">
+                    Showcase the 1-click clinical studio, voice assistant & digital prescribing
+                </p>
+                <button
+                    type="button"
+                    wire:click="loginAsDemo('doctor')"
+                    class="w-full bg-[#1e3fae] hover:bg-[#173087] text-white font-black py-2.5 px-4 rounded-xl text-xs shadow-md transition flex items-center justify-center gap-2 cursor-pointer"
+                    title="Launch Doctor Demo"
+                >
+                    <span>🩺 Launch Doctor Demo (1-Click)</span>
+                    <span wire:loading wire:target="loginAsDemo" class="animate-spin">⏳</span>
+                </button>
+                <div class="mt-2 text-[10px] text-slate-500 font-medium">
+                    Demo Account: <span class="font-mono text-slate-700 font-bold">doctor@bikrify.com</span>
                 </div>
-                <div class="mt-2 text-[10px] text-slate-600 text-center flex items-center justify-center gap-2">
-                    <span>Default Password: <code class="font-bold text-[#1e3fae]">password</code></span>
-                </div>
+            </div>
+
+            <div class="relative flex items-center justify-center my-4">
+                <div class="border-t border-slate-200 w-full"></div>
+                <span class="bg-white px-3 text-[10px] font-bold text-slate-400 uppercase tracking-wider">Or Sign in with Credentials</span>
+                <div class="border-t border-slate-200 w-full"></div>
             </div>
 
             <!-- Standard Login Form -->

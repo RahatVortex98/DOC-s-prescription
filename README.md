@@ -219,15 +219,14 @@ The database seeder automatically creates:
 
 ---
 
-## 🔑 Demo Access & Default Seeded Accounts
+## 🔑 Doctor Demo Access & Seeded Accounts
 
-The login portal at **`http://localhost:8000/login`** features instant **⚡ 1-Click Demo Login** buttons for effortless testing:
+The login portal at **`http://localhost:8000/login`** features an instant **⚡ 1-Click Doctor Demo** button tailored specifically for client demonstrations:
 
-| Role | 1-Click Demo Button | Email | Password | Access & Purpose |
-| :--- | :--- | :--- | :--- | :--- |
-| **Doctor** | `[ 🩺 Doctor ]` | `doctor@bikrify.com` | `password` | **Clinical Studio**: Full prescribing workspace, patient history, and analytics. |
-| **Assistant** | `[ 📋 Assistant ]` | `assistant@bikrify.com` | `password` | **Front-Desk**: Queue booking & status updates (clinical findings/diagnosis masked). |
-| **Super Admin** | `[ 🛡️ Admin ]` | `admin@bikrify.com` | `password` | **Governance Portal**: Provision and govern doctor clinics at `/admin/tenants`. |
+- **Doctor Interactive Demo (1-Click)**: Clicking **`[ 🩺 Launch Doctor Demo (1-Click) ]`** logs in immediately as `doctor@bikrify.com` (`password`) and opens the full Prescription Studio with active patients, vitals calculator, voice dictation, and drug kits.
+- **Other Seeded Accounts** (Log in via standard credentials form):
+  - **Super Admin**: `admin@bikrify.com` / `password` (Governance Portal at `/admin/tenants`)
+  - **Assistant**: `assistant@bikrify.com` / `password` (Front-Desk Queue Desk at `/app/appointments`)
 
 ---
 
