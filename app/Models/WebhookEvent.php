@@ -19,6 +19,11 @@ class WebhookEvent extends Model
     public const STATUS_FAILED = 'failed';
 
     /**
+     * @var string
+     */
+    protected $table = 'webhook_events';
+
+    /**
      * @var list<string>
      */
     protected $fillable = [

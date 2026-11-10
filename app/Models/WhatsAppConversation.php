@@ -35,6 +35,11 @@ class WhatsAppConversation extends Model
     public const STEP_HUMAN_TAKEOVER = 'HUMAN_TAKEOVER';
 
     /**
+     * @var string
+     */
+    protected $table = 'whatsapp_conversations';
+
+    /**
      * @var list<string>
      */
     protected $fillable = [

@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\ChamberController;
 use App\Http\Controllers\PrescriptionPrintController;
+use App\Http\Controllers\WhatsAppWebhookController;
 use App\Livewire\Admin\TenantManager;
 use App\Livewire\AppointmentManager;
 use App\Livewire\AuditLogViewer;
@@ -73,6 +74,13 @@ Route::middleware(['auth', 'tenant.active'])->prefix('app')->group(function () {
 Route::get('/rx/{public_id}', [PrescriptionPrintController::class, 'publicShare'])
     ->name('prescription.public_share')
     ->middleware('signed');
+
+// Centralized Meta WhatsApp Cloud API Webhooks
+Route::get('/webhooks/whatsapp', [WhatsAppWebhookController::class, 'verify'])
+    ->name('webhooks.whatsapp.verify');
+
+Route::post('/webhooks/whatsapp', [WhatsAppWebhookController::class, 'handle'])
+    ->name('webhooks.whatsapp.handle');
 
 // Public Tenant Patient Booking Route (must be registered last)
 Route::get('/{tenant:slug}', AppointmentManager::class)

@@ -24,6 +24,11 @@ class WhatsAppMessage extends Model
     public const STATUS_FAILED = 'failed';
 
     /**
+     * @var string
+     */
+    protected $table = 'whatsapp_messages';
+
+    /**
      * @var list<string>
      */
     protected $fillable = [
