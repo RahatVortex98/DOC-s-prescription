@@ -1,3 +1,8 @@
+@php
+    $tenant = $prescription->tenant;
+    $brandColor = $tenant?->brand_color ?: '#0891b2';
+    $bmdcNo = $prescription->doctor_bmdc_no ?: $tenant?->bmdc_no;
+@endphp
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -7,19 +12,19 @@
         @page { size: A4 portrait; margin: 10mm 15mm; }
         body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #1f2937; margin: 0; padding: 0; font-size: 13px; line-height: 1.4; }
         table { width: 100%; border-collapse: collapse; }
-        .header-table { border-bottom: 2px solid #0891b2; padding-bottom: 10px; margin-bottom: 10px; }
-        .doc-name { font-size: 18px; font-weight: bold; color: #0e7490; }
+        .header-table { border-bottom: 2px solid {{ $brandColor }}; padding-bottom: 10px; margin-bottom: 10px; }
+        .doc-name { font-size: 18px; font-weight: bold; color: {{ $brandColor }}; }
         .doc-qual { font-size: 12px; color: #4b5563; margin-top: 2px; }
-        .doc-desig { font-size: 11px; color: #0891b2; font-weight: 600; margin-top: 2px; }
-        .chamber-title { font-weight: bold; font-size: 15px; color: #0891b2; }
+        .doc-desig { font-size: 11px; color: {{ $brandColor }}; font-weight: 600; margin-top: 2px; }
+        .chamber-title { font-weight: bold; font-size: 15px; color: {{ $brandColor }}; }
         .chamber-info { font-size: 11px; color: #6b7280; margin-top: 2px; }
         .patient-strip { background: #f0fdfa; border: 1px solid #ccfbf1; padding: 8px 12px; margin: 10px 0 15px 0; }
         .patient-cell { font-size: 12px; color: #1e293b; }
         .body-table { min-height: 650px; }
         .left-col { width: 35%; border-right: 1.5px solid #e2e8f0; padding-right: 15px; vertical-align: top; }
         .right-col { width: 65%; padding-left: 20px; vertical-align: top; }
-        .section-title { font-weight: bold; text-transform: uppercase; font-size: 11px; color: #0891b2; margin-top: 15px; margin-bottom: 5px; }
-        .rx-symbol { font-size: 32px; font-weight: bold; font-family: serif; color: #0891b2; line-height: 1; margin-bottom: 15px; }
+        .section-title { font-weight: bold; text-transform: uppercase; font-size: 11px; color: {{ $brandColor }}; margin-top: 15px; margin-bottom: 5px; }
+        .rx-symbol { font-size: 32px; font-weight: bold; font-family: serif; color: {{ $brandColor }}; line-height: 1; margin-bottom: 15px; }
         .medicine-item { margin-bottom: 12px; }
         .med-title { font-weight: bold; font-size: 13px; }
         .med-detail { font-size: 12px; color: #4b5563; padding-left: 15px; margin-top: 2px; }
@@ -35,13 +40,13 @@
     </style>
 </head>
 <body>
-    <div class="no-print" style="background:#0891b2; padding:12px 20px; display:flex; flex-wrap:wrap; justify-content:space-between; align-items:center; gap:10px; margin-bottom:20px; color:#fff;">
+    <div class="no-print" style="background:{{ $brandColor }}; padding:12px 20px; display:flex; flex-wrap:wrap; justify-content:space-between; align-items:center; gap:10px; margin-bottom:20px; color:#fff;">
         <div style="font-weight:bold; font-size:13px;">
             Prescription #{{ $prescription->prescription_no }} &nbsp;|&nbsp; Patient: {{ $prescription->patient->name }}
         </div>
         <div style="display:flex; align-items:center; flex-wrap:wrap; gap:8px;">
             <!-- Letterhead Pad Mode Toggle -->
-            <label style="font-size:11px; background:#0e7490; padding:5px 10px; border-radius:4px; cursor:pointer; display:flex; align-items:center; gap:5px;">
+            <label style="font-size:11px; background:rgba(0,0,0,0.2); padding:5px 10px; border-radius:4px; cursor:pointer; display:flex; align-items:center; gap:5px;">
                 <input type="checkbox" id="togglePad" onchange="document.body.classList.toggle('letterhead-mode', this.checked)">
                 Pre-printed Pad Mode
             </label>
@@ -71,9 +76,9 @@
             @if($prescription->investigations)
                 <a href="{{ route('prescription.investigations', $prescription->id) }}" target="_blank" style="padding:6px 14px; background:#6366f1; color:#fff; font-weight:bold; font-size:11px; text-decoration:none; border-radius:4px;">🧪 Lab Slip</a>
             @endif
-            <button onclick="window.print()" style="padding:6px 14px; background:#fff; color:#0891b2; font-weight:bold; font-size:11px; border:none; border-radius:4px; cursor:pointer;">Print Now</button>
-            <a href="{{ route('prescription.pdf', $prescription->id) }}" style="padding:6px 14px; background:#0e7490; color:#fff; font-weight:bold; font-size:11px; text-decoration:none; border-radius:4px;">Download PDF</a>
-            <a href="{{ route('prescription.builder') }}" style="padding:6px 14px; background:#164e63; color:#fff; font-weight:bold; font-size:11px; text-decoration:none; border-radius:4px;">Back to Studio</a>
+            <button onclick="window.print()" style="padding:6px 14px; background:#fff; color:{{ $brandColor }}; font-weight:bold; font-size:11px; border:none; border-radius:4px; cursor:pointer;">Print Now</button>
+            <a href="{{ route('prescription.pdf', $prescription->id) }}" style="padding:6px 14px; background:rgba(0,0,0,0.25); color:#fff; font-weight:bold; font-size:11px; text-decoration:none; border-radius:4px;">Download PDF</a>
+            <a href="{{ route('prescription.builder') }}" style="padding:6px 14px; background:rgba(0,0,0,0.4); color:#fff; font-weight:bold; font-size:11px; text-decoration:none; border-radius:4px;">Back to Studio</a>
         </div>
     </div>
 
@@ -84,13 +89,21 @@
     <table class="header-table">
         <tr>
             <td style="width: 55%; vertical-align: top;">
+                @if($tenant?->logo_path)
+                    <div style="margin-bottom: 8px;">
+                        <img src="{{ asset('storage/' . $tenant->logo_path) }}" alt="Logo" style="max-height: 48px; max-width: 180px; object-fit: contain;">
+                    </div>
+                @endif
                 <div class="doc-name">{{ $prescription->doctor_name }}</div>
                 <div class="doc-qual">{{ $prescription->doctor_qualification }}</div>
                 @if($prescription->doctor_designation)
                     <div class="doc-desig">{{ $prescription->doctor_designation }}</div>
                 @endif
+                @if($bmdcNo)
+                    <div style="font-size: 11px; color: #4b5563; font-weight: 600; margin-top: 2px;">BMDC Reg. No: {{ $bmdcNo }}</div>
+                @endif
                 @if($prescription->chamber && $prescription->chamber->specialty)
-                    <div style="font-size: 11px; color: #0891b2; font-weight: bold; margin-top: 2px;">Specialty: {{ $prescription->chamber->specialty }}</div>
+                    <div style="font-size: 11px; color: {{ $brandColor }}; font-weight: bold; margin-top: 2px;">Specialty: {{ $prescription->chamber->specialty }}</div>
                 @endif
                 <div style="font-size: 11px; color: #6b7280; margin-top: 3px;">Bikrify Verified Medical Practitioner</div>
             </td>
@@ -189,7 +202,14 @@
                 Powered by <strong>Bikrify Digital Health Platform</strong>
             </td>
             <td style="text-align: right; vertical-align: bottom;">
-                Doctor's Signature: _________________________
+                @if($tenant?->signature_path)
+                    <div style="margin-bottom: 4px;">
+                        <img src="{{ asset('storage/' . $tenant->signature_path) }}" alt="Doctor Signature" style="max-height: 45px; display: inline-block;">
+                    </div>
+                    <div style="font-size: 11px; color: #4b5563;">Authorized Doctor's Signature</div>
+                @else
+                    Doctor's Signature: _________________________
+                @endif
             </td>
         </tr>
     </table>

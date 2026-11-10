@@ -11,13 +11,18 @@ class TenantUserSeeder extends Seeder
 {
     public function run(): void
     {
-        // 1. Create Default Doctor Tenant
+        // 1. Create Default Demo Doctor Tenant
         $tenant = Tenant::updateOrCreate(
             ['slug' => 'dr-mahbubur'],
             [
                 'doctor_name' => 'Prof. Dr. Mahbubur Rahman',
                 'bmdc_no' => 'A-45210',
                 'status' => 'active',
+                'doctor_qualification' => 'MBBS, FCPS, MD (Nephrology), BCS (Health)',
+                'doctor_designation' => 'Professor & Chief Consultant, Department of Nephrology',
+                'specialty' => 'Nephrology / CKD Specialist',
+                'doctor_description' => 'Professor and Head of Nephrology. Over 20 years of clinical experience in advanced kidney diseases, hypertension, and dialysis therapy.',
+                'brand_color' => '#0891b2',
             ]
         );
 

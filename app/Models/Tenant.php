@@ -36,6 +36,13 @@ class Tenant extends Model
         'doctor_name',
         'bmdc_no',
         'status',
+        'doctor_qualification',
+        'doctor_designation',
+        'specialty',
+        'doctor_description',
+        'brand_color',
+        'logo_path',
+        'signature_path',
     ];
 
     public function isSuspended(): bool
@@ -91,5 +98,21 @@ class Tenant extends Model
     public function appointments(): HasMany
     {
         return $this->hasMany(Appointment::class);
+    }
+
+    /**
+     * @return HasMany<PrescriptionTemplate, $this>
+     */
+    public function templates(): HasMany
+    {
+        return $this->hasMany(PrescriptionTemplate::class);
+    }
+
+    /**
+     * @return HasMany<DrugKit, $this>
+     */
+    public function drugKits(): HasMany
+    {
+        return $this->hasMany(DrugKit::class);
     }
 }

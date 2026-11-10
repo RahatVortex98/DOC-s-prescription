@@ -33,6 +33,21 @@
         recognition.start();
     }
 }">
+    @if($hasNoChamberSetup)
+        <div class="mb-4 bg-amber-50 border-l-4 border-amber-500 p-4 rounded-r-lg shadow-sm flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <span class="text-2xl">⚠️</span>
+                <div>
+                    <h4 class="text-sm font-bold text-amber-900">Hospital / Chamber Setup Required</h4>
+                    <p class="text-xs text-amber-700">Please configure your chamber/hospital location before creating prescriptions. Your doctor credentials have been verified by Super Admin.</p>
+                </div>
+            </div>
+            <button type="button" wire:click="openNewChamberModal" class="px-3 py-1.5 bg-amber-600 hover:bg-amber-700 text-white rounded text-xs font-bold transition">
+                Setup Chamber
+            </button>
+        </div>
+    @endif
+
     <!-- Top Header: Doctor Specialty & Hospital Chamber Banner (Bikrify Customized) -->
     <div class="bg-gradient-to-r from-cyan-900 via-cyan-800 to-slate-900 text-white rounded-2xl shadow-lg p-5 mb-5">
         <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
@@ -227,32 +242,40 @@
         </div>
     </div>
 
-    <!-- Less Input Bar: 1-Click Clinical Full Bundles & Quick Drug Kits -->
+    <!-- Less Input Bar: 1-Click Clinical Full Bundles & Quick Drug Kits (DB-driven) -->
     <div class="bg-gradient-to-r from-cyan-50 via-slate-50 to-amber-50 border border-cyan-200 rounded-xl p-3 mb-5">
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-            <div class="flex items-center gap-2">
+            <div class="flex items-center gap-2 flex-wrap">
                 <span class="text-xs font-black uppercase text-cyan-900 flex items-center gap-1">
-                    <span>⚡</span> 1-Click Less-Input Automation:
+                    <span>⚡</span> 1-Click Clinical Bundles:
                 </span>
-                @if(isset($specialtyTemplates[$specialty]['bundle']))
+                @forelse($templates as $tpl)
+                    <button type="button"
+                            wire:click="applySpecialtyBundle({{ $tpl->id }})"
+                            class="bg-cyan-700 hover:bg-cyan-800 text-white text-xs px-3 py-1 rounded-md font-bold transition shadow-xs cursor-pointer flex items-center gap-1">
+                        {{ $tpl->name }}
+                    </button>
+                @empty
                     <button type="button"
                             wire:click="applySpecialtyBundle"
-                            class="bg-cyan-700 hover:bg-cyan-800 text-white text-xs px-3 py-1 rounded-md font-bold transition shadow-xs cursor-pointer flex items-center gap-1">
-                        {{ $specialtyTemplates[$specialty]['bundle']['name'] }}
+                            class="bg-cyan-700 hover:bg-cyan-800 text-white text-xs px-3 py-1 rounded-md font-bold transition shadow-xs cursor-pointer">
+                        ⚡ Quick Specialty Protocol
                     </button>
-                @endif
+                @endforelse
             </div>
 
             <!-- 1-Click Drug Kits -->
             <div class="flex items-center gap-2 flex-wrap">
                 <span class="text-xs font-bold text-gray-600">Quick Drug Kits:</span>
-                @foreach($specialtyTemplates[$specialty]['kits'] ?? [] as $kIdx => $sKit)
+                @forelse($drugKits as $kIdx => $dKit)
                     <button type="button"
-                            wire:click="applyDrugKit({{ $kIdx }})"
+                            wire:click="applyDrugKit({{ $dKit->id }})"
                             class="bg-white hover:bg-amber-100 text-amber-900 border border-amber-300 text-xs px-2.5 py-1 rounded-md font-bold transition shadow-xs cursor-pointer">
-                        {{ $sKit['name'] }}
+                        {{ $dKit->name }}
                     </button>
-                @endforeach
+                @empty
+                    <span class="text-xs text-slate-400 italic">No drug kits configured</span>
+                @endforelse
             </div>
         </div>
     </div>
@@ -277,9 +300,13 @@
                     </div>
                 </div>
                 <select wire:model.live="specialty" class="w-full border rounded-md p-1.5 text-xs font-bold text-cyan-800 bg-cyan-50">
-                    @foreach(array_keys($specialtyTemplates) as $spec)
-                        <option value="{{ $spec }}">{{ $spec }}</option>
-                    @endforeach
+                    <option value="General Medicine">General Medicine</option>
+                    <option value="Nephrology / CKD Specialist">Nephrology / CKD Specialist</option>
+                    <option value="Cardiology">Cardiology</option>
+                    <option value="Gastroenterology">Gastroenterology</option>
+                    <option value="Diabetology / Endocrinology">Diabetology / Endocrinology</option>
+                    <option value="Pediatrics">Pediatrics</option>
+                    <option value="Gynecology & Obstetrics">Gynecology & Obstetrics</option>
                 </select>
             </div>
 
@@ -350,7 +377,7 @@
                 </div>
                 <!-- Quick Chips -->
                 <div class="flex flex-wrap gap-1 mb-2">
-                    @foreach($specialtyTemplates[$specialty]['complaints'] ?? [] as $chip)
+                    @foreach($specialtyChips['complaints'] ?? [] as $chip)
                         <button type="button"
                                 wire:click="appendQuickText('chief_complaints', '{{ addslashes($chip) }}')"
                                 class="text-[11px] bg-slate-100 hover:bg-cyan-100 text-slate-700 hover:text-cyan-800 px-2 py-0.5 rounded-full border transition cursor-pointer">
@@ -377,7 +404,7 @@
                     <button type="button" wire:click="clearField('clinical_findings')" class="text-[10px] text-gray-400 hover:text-red-500">Clear</button>
                 </div>
                 <div class="flex flex-wrap gap-1 mb-2">
-                    @foreach($specialtyTemplates[$specialty]['findings'] ?? [] as $chip)
+                    @foreach($specialtyChips['findings'] ?? [] as $chip)
                         <button type="button"
                                 wire:click="appendQuickText('clinical_findings', '{{ addslashes($chip) }}')"
                                 class="text-[11px] bg-slate-100 hover:bg-cyan-100 text-slate-700 hover:text-cyan-800 px-2 py-0.5 rounded-full border transition cursor-pointer">
@@ -403,7 +430,7 @@
                     <button type="button" wire:click="clearField('diagnosis')" class="text-[10px] text-gray-400 hover:text-red-500">Clear</button>
                 </div>
                 <div class="flex flex-wrap gap-1 mb-2">
-                    @foreach($specialtyTemplates[$specialty]['diagnosis'] ?? [] as $chip)
+                    @foreach($specialtyChips['diagnosis'] ?? [] as $chip)
                         <button type="button"
                                 wire:click="appendQuickText('diagnosis', '{{ addslashes($chip) }}')"
                                 class="text-[11px] bg-amber-50 hover:bg-amber-100 text-amber-800 px-2 py-0.5 rounded-full border border-amber-200 transition cursor-pointer">
@@ -430,7 +457,7 @@
                     <button type="button" wire:click="clearField('investigations')" class="text-[10px] text-gray-400 hover:text-red-500">Clear</button>
                 </div>
                 <div class="flex flex-wrap gap-1 mb-2">
-                    @foreach($specialtyTemplates[$specialty]['investigations'] ?? [] as $chip)
+                    @foreach($specialtyChips['investigations'] ?? [] as $chip)
                         <button type="button"
                                 wire:click="appendQuickText('investigations', '{{ addslashes($chip) }}')"
                                 class="text-[11px] bg-slate-100 hover:bg-cyan-100 text-slate-700 hover:text-cyan-800 px-2 py-0.5 rounded-full border transition cursor-pointer">
@@ -583,7 +610,7 @@
 
                 <!-- Specialty Advice Chips -->
                 <div class="flex flex-wrap gap-1 mb-2">
-                    @foreach($specialtyTemplates[$specialty]['advice'] ?? [] as $chip)
+                    @foreach($specialtyChips['advice'] ?? [] as $chip)
                         <button type="button"
                                 wire:click="appendQuickText('advice', '{{ addslashes($chip) }}')"
                                 class="text-[11px] bg-slate-100 hover:bg-cyan-100 text-slate-700 hover:text-cyan-800 px-2 py-0.5 rounded-full border transition cursor-pointer">
@@ -731,23 +758,24 @@
                             <input type="text" wire:model="chamber_form_room_number" class="w-full border rounded p-2 text-xs" placeholder="Room #405, 4th Floor">
                         </div>
                     </div>
-                    <div>
-                        <label class="block font-semibold text-gray-700">Doctor Name *</label>
-                        <input type="text" wire:model="chamber_form_doctor_name" class="w-full border rounded p-2 text-xs" placeholder="e.g. Prof. Dr. Mahbubur Rahman">
-                        @error('chamber_form_doctor_name') <span class="text-red-500">{{ $message }}</span> @enderror
-                    </div>
-                    <div>
-                        <label class="block font-semibold text-gray-700">Doctor Qualifications</label>
-                        <input type="text" wire:model="chamber_form_doctor_qualification" class="w-full border rounded p-2 text-xs" placeholder="MBBS, FCPS, MD (Nephrology)">
-                    </div>
-                    <div>
-                        <label class="block font-semibold text-gray-700">Doctor Designation / Department</label>
-                        <input type="text" wire:model="chamber_form_doctor_designation" class="w-full border rounded p-2 text-xs" placeholder="Professor & Head of Department">
-                    </div>
-                    <div>
-                        <label class="block font-semibold text-gray-700">Specialty *</label>
-                        <input type="text" wire:model="chamber_form_specialty" class="w-full border rounded p-2 text-xs" placeholder="Nephrology / CKD Specialist">
-                        @error('chamber_form_specialty') <span class="text-red-500">{{ $message }}</span> @enderror
+                    <!-- Verified Doctor Credentials (Read-only / Super Admin Controlled) -->
+                    <div class="bg-cyan-50/80 border border-cyan-200 rounded-lg p-3">
+                        <div class="flex items-center justify-between mb-1.5">
+                            <span class="text-[10px] font-bold uppercase tracking-wider text-cyan-800">Verified Practitioner Identity</span>
+                            <span class="bg-emerald-100 text-emerald-800 text-[10px] px-2 py-0.5 rounded-full font-bold flex items-center gap-1">
+                                ✓ Verified by Super Admin
+                            </span>
+                        </div>
+                        <div class="text-xs font-bold text-slate-900">{{ auth()->user()?->tenant?->doctor_name ?: ($chamber_form_doctor_name ?: $doctor_name) }}</div>
+                        <div class="text-[11px] text-slate-600">{{ auth()->user()?->tenant?->doctor_qualification ?: ($chamber_form_doctor_qualification ?: $doctor_qualification) }}</div>
+                        <div class="text-[11px] text-cyan-700 font-semibold">{{ auth()->user()?->tenant?->doctor_designation ?: ($chamber_form_doctor_designation ?: $doctor_designation) }}</div>
+                        <div class="text-[11px] text-slate-500 mt-1 flex flex-wrap gap-x-3">
+                            <span>BMDC Reg: <strong>{{ auth()->user()?->tenant?->bmdc_no ?: 'Verified' }}</strong></span>
+                            <span>Specialty: <strong>{{ auth()->user()?->tenant?->specialty ?: ($chamber_form_specialty ?: $specialty) }}</strong></span>
+                        </div>
+                        <p class="text-[10px] text-slate-500 mt-1 italic">
+                            Doctor identity is permanently locked to your verified account. To request changes, contact Bikrify Super Admin.
+                        </p>
                     </div>
                     <div>
                         <label class="block font-semibold text-gray-700">Address / Location</label>

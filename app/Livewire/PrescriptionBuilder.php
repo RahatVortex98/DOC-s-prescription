@@ -4,9 +4,11 @@ namespace App\Livewire;
 
 use App\Models\Appointment;
 use App\Models\Chamber;
+use App\Models\DrugKit;
 use App\Models\Medicine;
 use App\Models\Patient;
 use App\Models\Prescription;
+use App\Models\PrescriptionTemplate;
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Collection;
 use Livewire\Attributes\Locked;
@@ -46,37 +48,41 @@ class PrescriptionBuilder extends Component
     #[Locked]
     public ?int $current_appointment_id = null;
 
-    // Doctor & Chamber Details
+    // Doctor & Chamber Details (Driven by tenant & chamber profiles)
     #[Locked]
     public ?int $selected_chamber_id = null;
 
-    public string $doctor_name = 'Prof. Dr. Mahbubur Rahman';
+    public string $doctor_name = '';
 
-    public string $doctor_qualification = 'MBBS, FCPS, MD (Nephrology), BCS (Health)';
+    public string $doctor_qualification = '';
 
-    public string $doctor_designation = 'Professor & Chief Consultant, Department of Nephrology';
+    public string $doctor_designation = '';
 
-    public string $hospital_affiliation = 'Bikrify Specialist Care';
+    public string $bmdc_no = '';
 
-    public string $chamber_name = 'Bikrify Digital Health Care';
+    public string $hospital_affiliation = '';
 
-    public string $chamber_address = 'House 45, Road 11, Block D, Banani, Dhaka';
+    public string $chamber_name = '';
 
-    public string $room_number = 'Chamber #302';
+    public string $chamber_address = '';
 
-    public string $chamber_phone = '+880 1711-223344';
+    public string $room_number = '';
 
-    public string $secondary_phone = '+880 1911-334455';
+    public string $chamber_phone = '';
 
-    public string $whatsapp_number = '+8801711223344';
+    public string $secondary_phone = '';
 
-    public string $chamber_visiting_hours = '4:00 PM - 8:00 PM (Sat - Thu)';
+    public string $whatsapp_number = '';
 
-    public string $specialty = 'Nephrology / CKD Specialist';
+    public string $chamber_visiting_hours = '';
+
+    public string $specialty = 'General Medicine';
 
     public bool $showChamberModal = false;
 
-    // Chamber Form Details (Bikrify Onboarding / Setup)
+    public bool $hasNoChamberSetup = false;
+
+    // Chamber Form Details
     public ?int $chamber_form_id = null;
 
     public string $chamber_form_name = '';
@@ -140,295 +146,24 @@ class PrescriptionBuilder extends Component
      */
     public array $items = [];
 
-    // Pre-defined Specialty Templates & Bundles
-    /**
-     * @var array<string, array<string, mixed>>
-     */
-    public array $specialtyTemplates = [
-        'Nephrology / CKD Specialist' => [
-            'bundle' => [
-                'name' => '⚡ 1-Click CKD Stage 4 Full Profile',
-                'complaints' => "• Generalized body swelling (Edema) x 1 month\n• Decreased urine output (Oliguria)\n• Uncontrolled High Blood Pressure\n• Fatigue, nausea & loss of appetite",
-                'findings' => 'Bilateral pitting pedal edema (++), Facial puffiness, Pallor (+), BP: 160/95 mmHg, Pulse: 80/min, Chest: bilateral basal crepitations',
-                'diagnosis' => 'Chronic Kidney Disease (Stage 4), Hypertensive Nephrosclerosis, Renal Anemia',
-                'investigations' => 'S. Creatinine & eGFR, Blood Urea Nitrogen (BUN), Serum Electrolytes (Na+, K+, Cl-, HCO3-), Urine R/M/E with Spot ACR, USG of KUB with PVR, CBC with ESR, iPTH, Serum Calcium & Phosphate',
-                'advice' => "• Low protein diet (0.6 - 0.8 g/kg/day)\n• Fluid restriction to 1.5 Liters/day\n• Strict low salt diet (< 2 gm/day)\n• Avoid NSAIDs & nephrotoxic painkillers strictly\n• Avoid high potassium foods (banana, coconut water, green leaves)\n• Target BP < 130/80 mmHg\n• Follow-up after 15 days with S. Creatinine & Electrolytes report",
-            ],
-            'kits' => [
-                [
-                    'name' => '💊 CKD Core Drug Kit (4 Meds)',
-                    'items' => [
-                        ['type' => 'Tab.', 'name' => 'Ketosteril', 'generic' => 'Alpha-Ketoanalogues', 'strength' => '600mg', 'dosage' => '1+1+1', 'duration' => '1 month', 'instruction' => 'With meal (খাবারের সাথে)'],
-                        ['type' => 'Tab.', 'name' => 'Sodibicarb', 'generic' => 'Sodium Bicarbonate', 'strength' => '500mg', 'dosage' => '1+0+1', 'duration' => '1 month', 'instruction' => 'After meal (খাবার পরে)'],
-                        ['type' => 'Tab.', 'name' => 'Febux', 'generic' => 'Febuxostat', 'strength' => '40mg', 'dosage' => '0+0+1', 'duration' => '1 month', 'instruction' => 'After meal (খাবার পরে)'],
-                        ['type' => 'Tab.', 'name' => 'Calcichew D', 'generic' => 'Calcium + Vit D3', 'strength' => '500mg+200IU', 'dosage' => '0+0+1', 'duration' => '1 month', 'instruction' => 'After meal (খাবার পরে)'],
-                    ],
-                ],
-                [
-                    'name' => '💊 CKD Edema Relief Kit',
-                    'items' => [
-                        ['type' => 'Tab.', 'name' => 'Torsid', 'generic' => 'Torsemide', 'strength' => '10mg', 'dosage' => '1+0+0', 'duration' => '14 days', 'instruction' => 'Morning only (সকালে)'],
-                        ['type' => 'Tab.', 'name' => 'Amlopin', 'generic' => 'Amlodipine', 'strength' => '5mg', 'dosage' => '1+0+0', 'duration' => '1 month', 'instruction' => 'Morning (সকালে)'],
-                    ],
-                ],
-            ],
-            'complaints' => [
-                'Generalized body swelling (Edema)',
-                'Decreased urine output (Oliguria)',
-                'Nausea & Loss of appetite',
-                'Uncontrolled High BP',
-                'Fatigue & generalized weakness',
-                'Foamy / Frothy urine',
-                'Shortness of breath on exertion',
-                'Muscle cramps & generalized itching',
-            ],
-            'findings' => [
-                'Bilateral pitting pedal edema (++)',
-                'Pallor present (+)',
-                'Facial puffiness',
-                'BP: 160/95 mmHg',
-                'Pulse: 80/min, regular',
-                'Crepitations at lung bases',
-                'Skin excoriation marks',
-            ],
-            'diagnosis' => [
-                'Chronic Kidney Disease (Stage 4)',
-                'Chronic Kidney Disease (Stage 3b)',
-                'End-Stage Renal Disease (ESRD on HD)',
-                'Diabetic Nephropathy',
-                'Hypertensive Nephrosclerosis',
-                'Chronic Glomerulonephritis',
-                'Acute Kidney Injury (AKI) on CKD',
-                'Nephrotic Syndrome',
-            ],
-            'investigations' => [
-                'S. Creatinine & eGFR',
-                'Blood Urea Nitrogen (BUN)',
-                'Serum Electrolytes (Na+, K+, Cl-, HCO3-)',
-                'Urine R/M/E with Spot ACR',
-                'USG of KUB with PVR',
-                'CBC with ESR',
-                'Serum Calcium, Phosphate, Alkaline Phosphatase',
-                'Intact PTH (iPTH)',
-            ],
-            'advice' => [
-                'Low protein diet (0.6 - 0.8 g/kg/day)',
-                'Fluid restriction to 1.5 Liters/day',
-                'Strict low salt diet (< 2 gm/day)',
-                'Avoid NSAIDs & nephrotoxic drugs strictly',
-                'Maintain BP < 130/80 mmHg',
-                'Avoid high potassium foods (banana, coconut water, tomato)',
-                'Follow-up after 15 days with S. Creatinine & Electrolytes',
-            ],
-        ],
-        'Cardiology' => [
-            'bundle' => [
-                'name' => '⚡ 1-Click IHD / Angina Profile',
-                'complaints' => "• Central chest tightness on exertion x 2 weeks\n• Shortness of breath on walking\n• Palpitation & profuse sweating",
-                'findings' => 'BP: 150/90 mmHg, Pulse: 84/min, Raised JVP, Ankle edema (+)',
-                'diagnosis' => 'Ischaemic Heart Disease (IHD), Essential Hypertension (Grade 2), Dyslipidaemia',
-                'investigations' => 'ECG (12-Lead), Echocardiography (2D & Color Doppler), Serum Troponin-I, Fasting Lipid Profile, Serum Electrolytes, Chest X-Ray',
-                'advice' => "• Strictly low cholesterol and low salt diet\n• Stop smoking and tobacco strictly\n• Avoid heavy weight lifting & physical stress\n• Take emergency sublingual Nitroglycerin spray if acute chest pain occurs\n• Emergency hospital admission if pain lasts > 15 mins",
-            ],
-            'kits' => [
-                [
-                    'name' => '💊 Essential Heart & BP Kit',
-                    'items' => [
-                        ['type' => 'Tab.', 'name' => 'Amlopin', 'generic' => 'Amlodipine', 'strength' => '5mg', 'dosage' => '1+0+0', 'duration' => '1 month', 'instruction' => 'After breakfast (সকালে)'],
-                        ['type' => 'Tab.', 'name' => 'Bizoran', 'generic' => 'Amlodipine + Olmesartan', 'strength' => '5mg/20mg', 'dosage' => '0+0+1', 'duration' => '1 month', 'instruction' => 'At bedtime (রাতে)'],
-                        ['type' => 'Tab.', 'name' => 'Concor', 'generic' => 'Bisoprolol', 'strength' => '2.5mg', 'dosage' => '1+0+0', 'duration' => '1 month', 'instruction' => 'Morning (সকালে)'],
-                    ],
-                ],
-            ],
-            'complaints' => [
-                'Chest tightness on exertion',
-                'Palpitation & Sweating',
-                'Breathlessness on lying down (Orthopnea)',
-                'Swelling of both legs',
-                'Dizziness & Occasional blackout',
-            ],
-            'findings' => [
-                'BP: 150/90 mmHg',
-                'Pulse: 88/min, irregular',
-                'Raised JVP',
-                'Bilateral ankle edema (+)',
-            ],
-            'diagnosis' => [
-                'Ischaemic Heart Disease (IHD)',
-                'Essential Hypertension (Grade 2)',
-                'Congestive Cardiac Failure (CCF)',
-                'Atrial Fibrillation (AF)',
-            ],
-            'investigations' => [
-                'ECG (12-Lead)',
-                'Echocardiography (2D Doppler)',
-                'Lipid Profile (Fasting)',
-                'Serum Troponin-I',
-                'Chest X-Ray (P/A View)',
-            ],
-            'advice' => [
-                'Low fat and low salt diet',
-                'Strict avoidance of smoking & alcohol',
-                'Regular 30 minutes light walking',
-                'Emergency hospital admission if chest pain occurs',
-            ],
-        ],
-        'General Medicine' => [
-            'bundle' => [
-                'name' => '⚡ 1-Click Acute Viral Fever Profile',
-                'complaints' => "• High grade fever with chills x 3 days\n• Severe headache, generalized body & joint ache\n• Nausea and severe weakness",
-                'findings' => 'Temp: 102°F, BP: 120/80 mmHg, Pulse: 96/min, Tongue coated, Throat congested, Abdomen soft non-tender',
-                'diagnosis' => 'Acute Viral Syndrome / Dengue Fever to exclude',
-                'investigations' => 'Complete Blood Count (CBC with Platelet & Hct), Blood for NS1 Antigen & Dengue IgM/IgG, Urine R/M/E',
-                'advice' => "• Drink plenty of oral fluids, coconut water & ORS (at least 2.5 - 3 L/day)\n• Take tepid water sponging for high temperature\n• DO NOT take Aspirin or Diclofenac/NSAID painkillers\n• Strict bed rest\n• Report immediately if persistent vomiting or bleeding occurs",
-            ],
-            'kits' => [
-                [
-                    'name' => '💊 Fever & Bodyache Kit',
-                    'items' => [
-                        ['type' => 'Tab.', 'name' => 'Napa Extra', 'generic' => 'Paracetamol + Caffeine', 'strength' => '500+65mg', 'dosage' => '1+1+1', 'duration' => '3 days', 'instruction' => 'After meal (খাবার পরে)'],
-                        ['type' => 'Cap.', 'name' => 'Protonix', 'generic' => 'Pantoprazole', 'strength' => '20mg', 'dosage' => '1+0+1', 'duration' => '7 days', 'instruction' => 'Before meal (খাবার আগে)'],
-                        ['type' => 'Tab.', 'name' => 'Alarid', 'generic' => 'Cetirizine', 'strength' => '10mg', 'dosage' => '0+0+1', 'duration' => '5 days', 'instruction' => 'At bedtime (রাতে)'],
-                    ],
-                ],
-            ],
-            'complaints' => [
-                'High grade fever with chills x 3 days',
-                'Severe headache & generalized body ache',
-                'Cough with expectoration',
-                'Burning micturition',
-                'Severe weakness and dizziness',
-            ],
-            'findings' => [
-                'Temp: 102°F',
-                'BP: 120/80 mmHg',
-                'Pulse: 96/min',
-                'Tongue coated, mild dehydration',
-            ],
-            'diagnosis' => [
-                'Acute Viral Illness',
-                'Enteric Fever (Typhoid)',
-                'Urinary Tract Infection (UTI)',
-                'Community Acquired Pneumonia',
-            ],
-            'investigations' => [
-                'CBC with ESR & Platelet count',
-                'Dengue NS1 Antigen',
-                'Urine R/M/E & C/S',
-                'RBS (Random Blood Sugar)',
-            ],
-            'advice' => [
-                'Drink plenty of oral fluids and ORS',
-                'Complete bed rest',
-                'Tepid sponging for high fever',
-                'Follow-up after 3 days with reports',
-            ],
-        ],
-        'Gastroenterology' => [
-            'bundle' => [
-                'name' => '⚡ 1-Click GERD / PUD Profile',
-                'complaints' => "• Severe burning pain in upper abdomen after meals\n• Acid regurgitation & chest burning (heartburn)\n• Bloating, belching & early fullness",
-                'findings' => 'Epigastric tenderness present (+), Abdomen soft, Bowel sounds active',
-                'diagnosis' => 'Gastroesophageal Reflux Disease (GERD), Peptic Ulcer Disease (PUD), Non-Ulcer Dyspepsia',
-                'investigations' => 'Upper GI Endoscopy with CLO Test, USG of whole abdomen, H. Pylori Stool Antigen, Stool R/M/E',
-                'advice' => "• Avoid spicy, oily, fried and acidic foods\n• Do not lie down within 2 hours after having meals\n• Avoid tea, coffee, smoking and fizzy drinks\n• Eat small frequent meals at regular times\n• Drink 2.5 - 3 Liters of purified water daily",
-            ],
-            'kits' => [
-                [
-                    'name' => '💊 Gastritis & Reflux Relief Kit',
-                    'items' => [
-                        ['type' => 'Cap.', 'name' => 'Protonix', 'generic' => 'Pantoprazole', 'strength' => '40mg', 'dosage' => '1+0+1', 'duration' => '14 days', 'instruction' => 'Before meal (খাবার আগে)'],
-                        ['type' => 'Tab.', 'name' => 'Motigut', 'generic' => 'Domperidone', 'strength' => '10mg', 'dosage' => '1+0+1', 'duration' => '14 days', 'instruction' => '15 mins before meal (খাবার ১৫ মিনিট আগে)'],
-                        ['type' => 'Syr.', 'name' => 'Antacid Plus', 'generic' => 'Mag Hydroxide + Al Hydroxide + Simethicone', 'strength' => '200ml', 'dosage' => '2 spoon 3 times', 'duration' => '7 days', 'instruction' => '1 hr after meal (খাবার ১ ঘণ্টা পর)'],
-                    ],
-                ],
-            ],
-            'complaints' => [
-                'Burning epigastric pain after meals',
-                'Acid regurgitation & heartburn',
-                'Abdominal bloating & early satiety',
-                'Nausea & Vomiting',
-            ],
-            'findings' => [
-                'Epigastric tenderness present',
-                'Abdominal distension (+)',
-                'Bowel sounds active',
-            ],
-            'diagnosis' => [
-                'Gastroesophageal Reflux Disease (GERD)',
-                'Peptic Ulcer Disease (PUD)',
-                'Irritable Bowel Syndrome (IBS)',
-                'Non-Ulcer Dyspepsia',
-            ],
-            'investigations' => [
-                'Upper GI Endoscopy with biopsy',
-                'USG of whole abdomen',
-                'H. Pylori Stool Antigen',
-                'Liver Function Tests (SGPT, SGOT, Bilirubin)',
-            ],
-            'advice' => [
-                'Avoid spicy, oily, fatty and sour foods',
-                'Do not lie down within 2 hours after dinner',
-                'Avoid tea, coffee, smoking and carbonated drinks',
-                'Eat small frequent meals instead of heavy meals',
-            ],
-        ],
-        'Diabetology / Endocrinology' => [
-            'bundle' => [
-                'name' => '⚡ 1-Click Uncontrolled T2DM Profile',
-                'complaints' => "• Excessive thirst & frequent urination (Polyuria & Polydipsia)\n• Generalized weakness & weight loss\n• Burning sensation & numbness in feet (Neuropathy)",
-                'findings' => 'BMI: 28.5 kg/m², BP: 140/90 mmHg, Peripheral pulses palpable, Reduced monofilament sensation in feet',
-                'diagnosis' => 'Type 2 Diabetes Mellitus (Uncontrolled), Diabetic Peripheral Neuropathy',
-                'investigations' => 'HbA1c, Fasting Blood Sugar & 2hr Post Prandial, Urine for Microalbuminuria, Serum Creatinine & eGFR, Fasting Lipid Profile',
-                'advice' => "• Strict diabetic diet chart (avoid sugar, sweets, white bread & soft drinks)\n• Brisk walking for 45 minutes at least 5 days a week\n• Daily foot examination for any cut, redness or blister\n• Maintain home blood glucose monitoring record\n• Follow-up after 1 month with 3-point blood sugar chart",
-            ],
-            'kits' => [
-                [
-                    'name' => '💊 Diabetes Standard Starter Kit',
-                    'items' => [
-                        ['type' => 'Tab.', 'name' => 'Comet', 'generic' => 'Metformin', 'strength' => '500mg', 'dosage' => '1+0+1', 'duration' => '1 month', 'instruction' => 'With meal (খাবারের সাথে)'],
-                        ['type' => 'Tab.', 'name' => 'Linaglip', 'generic' => 'Linagliptin', 'strength' => '5mg', 'dosage' => '0+1+0', 'duration' => '1 month', 'instruction' => 'After lunch (দুপুরে খাবার পর)'],
-                        ['type' => 'Tab.', 'name' => 'Neobion', 'generic' => 'Vit B1+B6+B12', 'strength' => 'Standard', 'dosage' => '1+0+1', 'duration' => '1 month', 'instruction' => 'After meal (খাবার পরে)'],
-                    ],
-                ],
-            ],
-            'complaints' => [
-                'Excessive thirst & increased urination at night',
-                'Unexplained weight loss despite appetite',
-                'Tingling & numbness in feet and hands',
-                'Slow healing of wounds',
-                'General fatigue & lethargy',
-            ],
-            'findings' => [
-                'BMI: 28.5 kg/m²',
-                'BP: 135/85 mmHg',
-                'Diminished vibration sense in toes',
-            ],
-            'diagnosis' => [
-                'Type 2 Diabetes Mellitus (Uncontrolled)',
-                'Diabetic Peripheral Neuropathy',
-                'Metabolic Syndrome',
-            ],
-            'investigations' => [
-                'HbA1c',
-                'Fasting Blood Glucose & 2hr Post Prandial',
-                'Urine for Microalbuminuria',
-                'Serum Creatinine & Lipid Profile',
-            ],
-            'advice' => [
-                'Strict diabetic diet (avoid sweets, sugar, soft drinks)',
-                '45 minutes regular walking daily',
-                'Daily inspection of feet',
-                'Maintain blood glucose chart before and after meals',
-            ],
-        ],
-    ];
-
     public function mount(?int $prescriptionId = null): void
     {
+        $tenant = auth()->user()?->tenant;
+
+        if ($tenant) {
+            $this->doctor_name = $tenant->doctor_name ?? '';
+            $this->doctor_qualification = $tenant->doctor_qualification ?? '';
+            $this->doctor_designation = $tenant->doctor_designation ?? '';
+            $this->bmdc_no = $tenant->bmdc_no ?? '';
+            $this->specialty = $tenant->specialty ?: 'General Medicine';
+        }
+
         $chamber = Chamber::where('is_default', true)->first() ?: Chamber::first();
         if ($chamber) {
             $this->applyChamber($chamber);
+        } else {
+            $this->hasNoChamberSetup = true;
+            $this->openNewChamberModal();
         }
 
         $cloneId = $prescriptionId ?: request()->query('clone');
@@ -493,6 +228,97 @@ class PrescriptionBuilder extends Component
             ->get();
     }
 
+    public function getTemplatesProperty(): Collection
+    {
+        $query = PrescriptionTemplate::query();
+        if (! empty($this->specialty)) {
+            $query->where(function ($q) {
+                $q->where('specialty', $this->specialty)
+                    ->orWhereNull('specialty');
+            });
+        }
+
+        return $query->get();
+    }
+
+    public function getDrugKitsProperty(): Collection
+    {
+        $query = DrugKit::query();
+        if (! empty($this->specialty)) {
+            $query->where(function ($q) {
+                $q->where('specialty', $this->specialty)
+                    ->orWhereNull('specialty');
+            });
+        }
+
+        return $query->get();
+    }
+
+    /**
+     * @return array<string, list<string>>
+     */
+    public function getSpecialtyChipsProperty(): array
+    {
+        $templates = $this->templates;
+
+        $complaints = [];
+        $findings = [];
+        $diagnoses = [];
+        $investigations = [];
+        $advices = [];
+
+        foreach ($templates as $t) {
+            if ($t->chief_complaints) {
+                foreach (preg_split('/[,\n•]+/', $t->chief_complaints) as $c) {
+                    $c = trim($c);
+                    if (strlen($c) > 2) {
+                        $complaints[$c] = $c;
+                    }
+                }
+            }
+            if ($t->clinical_findings) {
+                foreach (preg_split('/[,\n•]+/', $t->clinical_findings) as $f) {
+                    $f = trim($f);
+                    if (strlen($f) > 2) {
+                        $findings[$f] = $f;
+                    }
+                }
+            }
+            if ($t->diagnosis) {
+                foreach (preg_split('/[,\n•]+/', $t->diagnosis) as $d) {
+                    $d = trim($d);
+                    if (strlen($d) > 2) {
+                        $diagnoses[$d] = $d;
+                    }
+                }
+            }
+            if ($t->investigations) {
+                foreach (preg_split('/[,\n•]+/', $t->investigations) as $i) {
+                    $i = trim($i);
+                    if (strlen($i) > 2) {
+                        $investigations[$i] = $i;
+                    }
+                }
+            }
+            if ($t->advice) {
+                foreach (preg_split('/[,\n•]+/', $t->advice) as $a) {
+                    $a = trim($a);
+                    if (strlen($a) > 2) {
+                        $advices[$a] = $a;
+                    }
+                }
+            }
+        }
+
+        return [
+            'complaints' => array_values(array_slice($complaints, 0, 8)),
+            'findings' => array_values(array_slice($findings, 0, 8)),
+            'diagnosis' => array_values(array_slice($diagnoses, 0, 8)),
+            'investigations' => array_values(array_slice($investigations, 0, 8)),
+            'advice' => array_values(array_slice($advices, 0, 8)),
+        ];
+    }
+
     public function selectChamber(int $id): void
     {
         $chamber = Chamber::findOrFail($id);
@@ -501,11 +327,16 @@ class PrescriptionBuilder extends Component
 
     protected function applyChamber(Chamber $chamber): void
     {
+        $tenant = auth()->user()?->tenant;
+
         $this->selected_chamber_id = $chamber->id;
-        $this->doctor_name = $chamber->doctor_name;
-        $this->doctor_qualification = $chamber->doctor_qualification;
-        $this->doctor_designation = $chamber->doctor_designation;
-        $this->hospital_affiliation = $chamber->hospital_affiliation ?? 'Bikrify Specialist Care';
+        $this->doctor_name = $tenant?->doctor_name ?: $chamber->doctor_name;
+        $this->doctor_qualification = $tenant?->doctor_qualification ?: ($chamber->doctor_qualification ?? '');
+        $this->doctor_designation = $tenant?->doctor_designation ?: ($chamber->doctor_designation ?? '');
+        $this->bmdc_no = $tenant?->bmdc_no ?: '';
+        $this->specialty = $tenant?->specialty ?: ($chamber->specialty ?: 'General Medicine');
+
+        $this->hospital_affiliation = $chamber->hospital_affiliation ?? '';
         $this->chamber_name = $chamber->name;
         $this->chamber_address = $chamber->address ?? '';
         $this->room_number = $chamber->room_number ?? '';
@@ -513,10 +344,9 @@ class PrescriptionBuilder extends Component
         $this->secondary_phone = $chamber->secondary_phone ?? '';
         $this->whatsapp_number = $chamber->whatsapp_number ?? '';
         $this->chamber_visiting_hours = $chamber->visiting_hours ?? '';
-        $this->specialty = $chamber->specialty ?: 'Nephrology / CKD Specialist';
+        $this->hasNoChamberSetup = false;
     }
 
-    // Call Patient from Today's Queue
     public function callQueuePatient(int $appointmentId): void
     {
         $appointment = Appointment::findOrFail($appointmentId);
@@ -529,7 +359,6 @@ class PrescriptionBuilder extends Component
         $this->patient_gender = $appointment->patient_gender;
         $this->patient_phone = $appointment->patient_phone ?? '';
 
-        // If patient already exists in DB, load their previous history
         if ($appointment->patient_id) {
             $this->selectPatient($appointment->patient_id);
         } elseif ($appointment->patient_phone) {
@@ -537,8 +366,8 @@ class PrescriptionBuilder extends Component
             if ($existing) {
                 $this->selectPatient($existing->id);
             } else {
-                $this->is_existing_patient = false;
                 $this->selected_patient_id = null;
+                $this->is_existing_patient = false;
             }
         }
 
@@ -547,40 +376,43 @@ class PrescriptionBuilder extends Component
         }
     }
 
-    // Apply Full Specialty Bundle (1-Click Less Input)
-    public function applySpecialtyBundle(): void
+    public function applySpecialtyBundle(?int $templateId = null): void
     {
-        $tpl = $this->specialtyTemplates[$this->specialty]['bundle'] ?? null;
-        if (! $tpl) {
+        $template = $templateId
+            ? PrescriptionTemplate::findOrFail($templateId)
+            : (PrescriptionTemplate::where('specialty', $this->specialty)->first()
+                ?? PrescriptionTemplate::first());
+
+        if (! $template) {
             return;
         }
 
-        $this->chief_complaints = $tpl['complaints'];
-        $this->clinical_findings = $tpl['findings'];
-        $this->diagnosis = $tpl['diagnosis'];
-        $this->investigations = $tpl['investigations'];
-        $this->advice = $tpl['advice'];
+        $this->chief_complaints = $template->chief_complaints ?? '';
+        $this->clinical_findings = $template->clinical_findings ?? '';
+        $this->diagnosis = $template->diagnosis ?? '';
+        $this->investigations = $template->investigations ?? '';
+        $this->advice = $template->advice ?? '';
     }
 
-    // Apply Specialty Drug Kit (1-Click Less Input)
-    public function applyDrugKit(int $kitIndex): void
+    public function applyDrugKit(int $kitIdOrIndex): void
     {
-        $kit = $this->specialtyTemplates[$this->specialty]['kits'][$kitIndex] ?? null;
-        if (! $kit || empty($kit['items'])) {
+        $kit = DrugKit::find($kitIdOrIndex)
+            ?? DrugKit::where('specialty', $this->specialty)->skip($kitIdOrIndex)->first()
+            ?? DrugKit::skip($kitIdOrIndex)->first();
+
+        if (! $kit || empty($kit->items)) {
             return;
         }
 
-        // If only 1 empty row, clear it first
         if (count($this->items) === 1 && empty($this->items[0]['name'])) {
             $this->items = [];
         }
 
-        foreach ($kit['items'] as $item) {
+        foreach ($kit->items as $item) {
             $this->items[] = $item;
         }
     }
 
-    // Insert Vitals into O/E
     public function insertVitals(): void
     {
         $parts = [];
@@ -601,11 +433,8 @@ class PrescriptionBuilder extends Component
             $heightM = ((float) $this->vital_height_cm) / 100;
             if ($heightM > 0) {
                 $bmi = round($weight / ($heightM * $heightM), 1);
-                $bmiCat = $bmi >= 30 ? 'Obese' : ($bmi >= 25 ? 'Overweight' : ($bmi >= 18.5 ? 'Normal' : 'Underweight'));
-                $parts[] = "Weight: {$weight} kg, Height: {$this->vital_height_cm} cm (BMI: {$bmi} {$bmiCat})";
+                $parts[] = "BMI: {$bmi}";
             }
-        } elseif ($this->vital_weight !== '') {
-            $parts[] = "Weight: {$this->vital_weight} kg";
         }
 
         if ($this->vital_rbs !== '') {
@@ -613,47 +442,31 @@ class PrescriptionBuilder extends Component
         }
 
         if (! empty($parts)) {
-            $vitalsString = implode(', ', $parts);
-            if (empty($this->clinical_findings)) {
-                $this->clinical_findings = $vitalsString;
+            $vitalString = implode(', ', $parts);
+            if (trim($this->clinical_findings) === '') {
+                $this->clinical_findings = $vitalString;
             } else {
-                $this->clinical_findings = $vitalsString."\n".$this->clinical_findings;
+                $this->clinical_findings .= "\n".$vitalString;
             }
         }
+
+        $this->vital_bp_systolic = '';
+        $this->vital_bp_diastolic = '';
+        $this->vital_pulse = '';
+        $this->vital_rbs = '';
     }
 
-    // Add Follow-Up to Advice in 1 Click
-    public function addFollowUp(string $period): void
-    {
-        $days = match ($period) {
-            '7 days' => 7,
-            '15 days' => 15,
-            '1 month' => 30,
-            '2 months' => 60,
-            '3 months' => 90,
-            default => 15,
-        };
-
-        $returnDate = now()->addDays($days)->format('d M, Y');
-        $followUpText = "• Follow-up after {$period} on {$returnDate} with latest investigation reports.";
-
-        if (empty($this->advice)) {
-            $this->advice = $followUpText;
-        } else {
-            $this->advice .= "\n".$followUpText;
-        }
-    }
-
-    // Chamber Customization (Bikrify Onboarding Modal)
     public function openNewChamberModal(): void
     {
+        $tenant = auth()->user()?->tenant;
+
         $this->chamber_form_id = null;
         $this->chamber_form_name = '';
         $this->chamber_form_hospital_affiliation = '';
-        $this->chamber_form_doctor_name = $this->doctor_name;
-        $this->chamber_form_doctor_qualification = $this->doctor_qualification;
-        $this->chamber_form_doctor_designation = $this->doctor_designation;
-        $this->chamber_form_specialty = $this->specialty;
+        $this->chamber_form_doctor_name = $tenant?->doctor_name ?: $this->doctor_name;
+        $this->chamber_form_doctor_qualification = $tenant?->doctor_qualification ?: $this->doctor_qualification;
+        $this->chamber_form_doctor_designation = $tenant?->doctor_designation ?: $this->doctor_designation;
+        $this->chamber_form_specialty = $tenant?->specialty ?: $this->specialty;
         $this->chamber_form_address = '';
         $this->chamber_form_room_number = '';
         $this->chamber_form_phone = '';
@@ -692,17 +505,18 @@ class PrescriptionBuilder extends Component
     {
         $this->validate([
             'chamber_form_name' => 'required|string|max:200',
-            'chamber_form_doctor_name' => 'required|string|max:150',
-            'chamber_form_specialty' => 'required|string|max:150',
         ]);
+
+        $tenant = auth()->user()?->tenant;
 
         $data = [
             'name' => $this->chamber_form_name,
             'hospital_affiliation' => $this->chamber_form_hospital_affiliation,
-            'doctor_name' => $this->chamber_form_doctor_name,
-            'doctor_qualification' => $this->chamber_form_doctor_qualification,
-            'doctor_designation' => $this->chamber_form_doctor_designation,
-            'specialty' => $this->chamber_form_specialty,
+            // Verified doctor credentials permanently locked to tenant
+            'doctor_name' => $tenant?->doctor_name ?: ($this->chamber_form_doctor_name ?: $this->doctor_name),
+            'doctor_qualification' => $tenant?->doctor_qualification ?: $this->chamber_form_doctor_qualification,
+            'doctor_designation' => $tenant?->doctor_designation ?: $this->chamber_form_doctor_designation,
+            'specialty' => $tenant?->specialty ?: ($this->chamber_form_specialty ?: $this->specialty),
             'address' => $this->chamber_form_address,
             'room_number' => $this->chamber_form_room_number,
             'phone' => $this->chamber_form_phone,
@@ -720,10 +534,10 @@ class PrescriptionBuilder extends Component
             $this->applyChamber($chamber);
         }
 
+        $this->hasNoChamberSetup = false;
         $this->showChamberModal = false;
     }
 
-    // Patient Lookup & History
     public function updatedPatientSearch(): void
     {
         $term = trim($this->patient_search);
@@ -795,17 +609,15 @@ class PrescriptionBuilder extends Component
             ];
         }
 
-        if (empty($this->diagnosis) && $prescription->diagnosis) {
-            $this->diagnosis = $prescription->diagnosis;
-        }
-        if (empty($this->advice) && $prescription->advice) {
-            $this->advice = $prescription->advice;
-        }
+        $this->chief_complaints = $prescription->chief_complaints ?? '';
+        $this->clinical_findings = $prescription->clinical_findings ?? '';
+        $this->diagnosis = $prescription->diagnosis ?? '';
+        $this->investigations = $prescription->investigations ?? '';
+        $this->advice = $prescription->advice ?? '';
 
         $this->showHistoryModal = false;
     }
 
-    // Medicine Search
     public function updatedSearch(): void
     {
         $term = trim($this->search);
@@ -815,8 +627,8 @@ class PrescriptionBuilder extends Component
 
             foreach ($tokens as $token) {
                 if ($token !== '') {
-                    $query->where(function ($q) use ($token) {
-                        $q->where('brand_name', 'like', "%{$token}%")
+                    $query->where(function ($sub) use ($token) {
+                        $sub->where('brand_name', 'like', "%{$token}%")
                             ->orWhere('generic_name', 'like', "%{$token}%");
                     });
                 }
@@ -887,6 +699,14 @@ class PrescriptionBuilder extends Component
 
     public function saveAndPrint()
     {
+        if (! $this->selected_chamber_id) {
+            $this->hasNoChamberSetup = true;
+            $this->showChamberModal = true;
+            $this->addError('chamber', 'Please configure your practice chamber profile before creating prescriptions.');
+
+            return;
+        }
+
         $this->validate([
             'patient_name' => 'required|string|max:150',
             'patient_age' => 'required|numeric|min:0|max:130',
@@ -933,6 +753,7 @@ class PrescriptionBuilder extends Component
             'doctor_name' => $this->doctor_name,
             'doctor_qualification' => $this->doctor_qualification,
             'doctor_designation' => $this->doctor_designation,
+            'doctor_bmdc_no' => $this->bmdc_no ?: null,
             'chamber_name' => $this->chamber_name,
             'chamber_address' => $this->chamber_address,
             'chamber_phone' => $this->chamber_phone,
@@ -957,7 +778,6 @@ class PrescriptionBuilder extends Component
             ]);
         }
 
-        // If this prescription was created for a queue appointment, mark it completed!
         if ($this->current_appointment_id) {
             $appointment = Appointment::findOrFail($this->current_appointment_id);
             $appointment->update([
@@ -975,6 +795,10 @@ class PrescriptionBuilder extends Component
         return view('livewire.prescription-builder', [
             'allChambers' => $this->chambers,
             'todayAppointments' => $this->todayAppointments,
-        ])->layout('layouts.app');
+            'todayQueue' => $this->todayAppointments,
+            'templates' => $this->templates,
+            'drugKits' => $this->drugKits,
+            'specialtyChips' => $this->specialtyChips,
+        ]);
     }
 }

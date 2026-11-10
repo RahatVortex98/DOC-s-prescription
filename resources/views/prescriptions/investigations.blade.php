@@ -1,3 +1,8 @@
+@php
+    $tenant = $prescription->tenant;
+    $brandColor = $tenant?->brand_color ?: '#0891b2';
+    $bmdcNo = $prescription->doctor_bmdc_no ?: $tenant?->bmdc_no;
+@endphp
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -16,7 +21,7 @@
         }
         .slip-card {
             background: #ffffff;
-            border: 2px solid #0891b2;
+            border: 2px solid {{ $brandColor }};
             border-radius: 12px;
             padding: 20px;
             max-width: 550px;
@@ -24,9 +29,9 @@
             box-shadow: 0 4px 15px rgba(0,0,0,0.05);
         }
         table { width: 100%; border-collapse: collapse; }
-        .header { border-bottom: 2px solid #0891b2; padding-bottom: 10px; margin-bottom: 12px; }
+        .header { border-bottom: 2px solid {{ $brandColor }}; padding-bottom: 10px; margin-bottom: 12px; }
         .slip-title {
-            background: #0891b2;
+            background: {{ $brandColor }};
             color: #fff;
             display: inline-block;
             padding: 3px 12px;
@@ -37,9 +42,9 @@
             letter-spacing: 1px;
             margin-bottom: 6px;
         }
-        .doc-name { font-size: 16px; font-weight: bold; color: #0e7490; }
+        .doc-name { font-size: 16px; font-weight: bold; color: {{ $brandColor }}; }
         .doc-qual { font-size: 11px; color: #4b5563; }
-        .doc-desig { font-size: 11px; color: #0891b2; font-weight: 600; }
+        .doc-desig { font-size: 11px; color: {{ $brandColor }}; font-weight: 600; }
         .patient-strip {
             background: #f0fdfa;
             border: 1px solid #ccfbf1;
@@ -67,7 +72,7 @@
         .checkbox {
             width: 16px;
             height: 16px;
-            border: 1.5px solid #0891b2;
+            border: 1.5px solid {{ $brandColor }};
             border-radius: 3px;
             display: inline-block;
         }
@@ -89,7 +94,7 @@
             align-items: center;
         }
         .btn {
-            background: #0891b2;
+            background: {{ $brandColor }};
             color: #fff;
             padding: 8px 16px;
             border-radius: 6px;
@@ -123,9 +128,12 @@
                     @if($prescription->doctor_designation)
                         <div class="doc-desig">{{ $prescription->doctor_designation }}</div>
                     @endif
+                    @if($bmdcNo)
+                        <div style="font-size: 10px; color: #4b5563; font-weight: 600; margin-top: 2px;">BMDC Reg. No: {{ $bmdcNo }}</div>
+                    @endif
                 </div>
                 <div style="text-align:right;">
-                    <div style="font-weight:bold; font-size:13px; color:#0891b2;">{{ $prescription->chamber_name }}</div>
+                    <div style="font-weight:bold; font-size:13px; color:{{ $brandColor }};">{{ $prescription->chamber_name }}</div>
                     <div style="font-size:10px; color:#6b7280;">Rx: {{ $prescription->prescription_no }}</div>
                     <div style="font-size:10px; color:#6b7280;">Date: {{ \Carbon\Carbon::parse($prescription->prescription_date)->format('d M, Y') }}</div>
                 </div>

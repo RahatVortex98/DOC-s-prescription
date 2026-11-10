@@ -13,6 +13,7 @@ class DatabaseSeeder extends Seeder
             ChamberSeeder::class,
             MedicineSeeder::class,
             AppointmentSeeder::class,
+            TemplateAndDrugKitSeeder::class,
         ]);
     }
 }

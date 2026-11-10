@@ -23,6 +23,7 @@ class Prescription extends Model
         'doctor_name',
         'doctor_qualification',
         'doctor_designation',
+        'doctor_bmdc_no',
         'chamber_name',
         'chamber_address',
         'chamber_phone',
@@ -34,6 +35,29 @@ class Prescription extends Model
         'investigations',
         'advice',
     ];
+
+    protected static function booted(): void
+    {
+        static::creating(function (Prescription $prescription) {
+            if (empty($prescription->chamber_name) && $prescription->chamber_id) {
+                $chamber = Chamber::withoutGlobalScope('tenant')->find($prescription->chamber_id);
+                if ($chamber) {
+                    $prescription->chamber_name = $chamber->name;
+                    $prescription->chamber_address ??= $chamber->address;
+                    $prescription->chamber_phone ??= $chamber->phone;
+                    $prescription->chamber_visiting_hours ??= $chamber->visiting_hours;
+                }
+            }
+
+            if (empty($prescription->chamber_name)) {
+                $prescription->chamber_name = 'Main Chamber';
+            }
+
+            if (empty($prescription->doctor_name) && auth()->check() && auth()->user()?->tenant) {
+                $prescription->doctor_name = auth()->user()->tenant->doctor_name;
+            }
+        });
+    }
 
     /**
      * @return array<string, string>

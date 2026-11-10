@@ -14,6 +14,7 @@ use App\Models\Patient;
 use App\Models\Prescription;
 use App\Models\Tenant;
 use App\Models\User;
+use Database\Seeders\TemplateAndDrugKitSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\File;
 use Livewire\Livewire;
@@ -47,6 +48,8 @@ class PrescriptionFeatureTest extends TestCase
         ]);
 
         $this->actingAs($this->doctor);
+
+        $this->seed(TemplateAndDrugKitSeeder::class);
     }
 
     public function test_root_redirects_to_prescription_builder(): void
@@ -524,6 +527,11 @@ class PrescriptionFeatureTest extends TestCase
             ->set('doctor_name', 'Dr. Farhana Ahmed')
             ->set('slug', 'dr-farhana')
             ->set('bmdc_no', 'A-88771')
+            ->set('doctor_qualification', 'MBBS, FCPS (Cardiology)')
+            ->set('doctor_designation', 'Associate Professor')
+            ->set('specialty', 'Cardiology')
+            ->set('doctor_description', 'Cardiology and hypertension specialist.')
+            ->set('brand_color', '#0284c7')
             ->set('status', 'active')
             ->set('doctor_email', 'farhana@cardio.com')
             ->set('doctor_password', 'secretpass123')
@@ -533,12 +541,48 @@ class PrescriptionFeatureTest extends TestCase
             'slug' => 'dr-farhana',
             'doctor_name' => 'Dr. Farhana Ahmed',
             'bmdc_no' => 'A-88771',
+            'doctor_qualification' => 'MBBS, FCPS (Cardiology)',
+            'doctor_designation' => 'Associate Professor',
+            'specialty' => 'Cardiology',
+            'doctor_description' => 'Cardiology and hypertension specialist.',
+            'brand_color' => '#0284c7',
             'status' => 'active',
         ]);
 
         $this->assertDatabaseHas('users', [
             'email' => 'farhana@cardio.com',
             'role' => 'doctor',
+        ]);
+    }
+
+    public function test_super_admin_can_update_doctor_profile_permanently(): void
+    {
+        $this->app['auth']->logout();
+
+        $superAdmin = User::create([
+            'name' => 'Bikrify Super Admin 2',
+            'email' => 'admin2@bikrify.com',
+            'password' => bcrypt('password123'),
+            'role' => 'super_admin',
+            'tenant_id' => null,
+        ]);
+
+        $this->actingAs($superAdmin);
+
+        Livewire::test(TenantManager::class)
+            ->call('openEditModal', $this->tenant->id)
+            ->set('doctor_name', 'Prof. Dr. Mahbubur Rahman Updated')
+            ->set('doctor_qualification', 'MBBS, FCPS, MD, FRCP (Glasgow)')
+            ->set('doctor_designation', 'Professor & Head of Nephrology')
+            ->set('doctor_description', 'Updated permanent bio by Bikrify super admin.')
+            ->call('updateTenant');
+
+        $this->assertDatabaseHas('tenants', [
+            'id' => $this->tenant->id,
+            'doctor_name' => 'Prof. Dr. Mahbubur Rahman Updated',
+            'doctor_qualification' => 'MBBS, FCPS, MD, FRCP (Glasgow)',
+            'doctor_designation' => 'Professor & Head of Nephrology',
+            'doctor_description' => 'Updated permanent bio by Bikrify super admin.',
         ]);
     }
 
