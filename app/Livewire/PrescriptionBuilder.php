@@ -749,6 +749,25 @@ class PrescriptionBuilder extends Component
         $this->{$field} = '';
     }
 
+    public function addFollowUp(string $duration): void
+    {
+        $followUpText = "Next visit / Follow-up: after {$duration} (or with investigation reports).";
+        $current = trim((string) $this->advice);
+
+        if ($current === '') {
+            $this->advice = $followUpText;
+
+            return;
+        }
+
+        // If a follow-up line already exists in advice, replace it cleanly to avoid duplicates
+        if (preg_match('/(Next visit|Follow-up|পরবর্তী সাক্ষাৎ)[^\n]*/iu', $current)) {
+            $this->advice = (string) preg_replace('/(Next visit|Follow-up|পরবর্তী সাক্ষাৎ)[^\n]*/iu', $followUpText, $current);
+        } else {
+            $this->advice = $current."\n• ".$followUpText;
+        }
+    }
+
     public function saveAndPrint()
     {
         if (! $this->selected_chamber_id) {

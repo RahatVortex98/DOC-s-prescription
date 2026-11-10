@@ -208,7 +208,11 @@ class PrescriptionFeatureTest extends TestCase
             ->assertSet('items.0.duration', '5 days')
             ->assertSet('items.0.instruction', 'After meal (খাবার পরে)')
             ->call('appendQuickText', 'chief_complaints', 'Fever x 3 days')
-            ->assertSet('chief_complaints', 'Fever x 3 days');
+            ->assertSet('chief_complaints', 'Fever x 3 days')
+            ->call('addFollowUp', '7 days')
+            ->assertSet('advice', 'Next visit / Follow-up: after 7 days (or with investigation reports).')
+            ->call('addFollowUp', '15 days')
+            ->assertSet('advice', 'Next visit / Follow-up: after 15 days (or with investigation reports).');
     }
 
     public function test_vitals_calculator_inserts_clean_oe(): void
