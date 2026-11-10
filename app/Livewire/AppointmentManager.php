@@ -5,11 +5,10 @@ namespace App\Livewire;
 use App\Models\Appointment;
 use App\Models\AuditLog;
 use App\Models\Chamber;
-use App\Models\Patient;
 use App\Models\Tenant;
+use App\Services\AppointmentService;
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Collection;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Validation\Rule;
 use Livewire\Attributes\Locked;
@@ -168,63 +167,21 @@ class AppointmentManager extends Component
             ? $this->tenant->id
             : (auth()->check() ? auth()->user()->tenant_id : null);
 
-        $chamberId = $this->selected_chamber_id;
-        $date = $this->selected_date;
-        $phone = trim($this->patient_phone);
+        $bookingSource = $this->is_public_portal
+            ? Appointment::SOURCE_QR
+            : Appointment::SOURCE_RECEPTIONIST;
 
-        $appointment = DB::transaction(function () use ($tenantId, $chamberId, $date, $phone) {
-            // Lock max serial for this chamber on this date
-            $lastSerial = Appointment::withoutGlobalScope('tenant')
-                ->where('chamber_id', $chamberId)
-                ->whereDate('appointment_date', $date)
-                ->lockForUpdate()
-                ->max('serial_no') ?? 0;
-
-            $serial = $lastSerial + 1;
-
-            $patientId = null;
-            if ($phone !== '') {
-                $trimmedName = trim($this->patient_name);
-                $patient = Patient::withoutGlobalScope('tenant')
-                    ->where('tenant_id', $tenantId)
-                    ->where('phone', $phone)
-                    ->whereRaw('LOWER(TRIM(name)) = ?', [strtolower($trimmedName)])
-                    ->first();
-
-                if ($patient) {
-                    $patientId = $patient->id;
-                } else {
-                    $newPatient = new Patient([
-                        'patient_id' => 'PID-'.strtoupper(bin2hex(random_bytes(3))),
-                        'name' => $trimmedName,
-                        'phone' => $phone,
-                        'age' => (int) $this->patient_age,
-                        'gender' => $this->patient_gender,
-                    ]);
-                    $newPatient->tenant_id = $tenantId;
-                    $newPatient->save();
-                    $patientId = $newPatient->id;
-                }
-            }
-
-            $app = new Appointment([
-                'chamber_id' => $chamberId,
-                'patient_id' => $patientId,
-                'serial_no' => $serial,
-                'patient_name' => $this->patient_name,
-                'patient_phone' => $phone ?: null,
-                'patient_age' => (int) $this->patient_age,
-                'patient_gender' => $this->patient_gender,
-                'appointment_date' => $date,
-                'appointment_time' => $this->appointment_time ?: null,
-                'status' => 'waiting',
-                'notes' => $this->notes ?: null,
-            ]);
-            $app->tenant_id = $tenantId;
-            $app->save();
-
-            return $app;
-        }, 5);
+        $appointment = app(AppointmentService::class)->createAppointment([
+            'chamber_id' => $this->selected_chamber_id,
+            'appointment_date' => $this->selected_date,
+            'appointment_time' => $this->appointment_time,
+            'patient_name' => $this->patient_name,
+            'patient_age' => (int) $this->patient_age,
+            'patient_gender' => $this->patient_gender,
+            'patient_phone' => $this->patient_phone,
+            'notes' => $this->notes,
+            'booking_source' => $bookingSource,
+        ], $tenantId);
 
         $this->generatedSerial = $appointment->serial_no;
         $this->successMessage = "Appointment confirmed! Serial #{$appointment->serial_no} for {$this->patient_name}.";

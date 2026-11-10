@@ -28,6 +28,8 @@ class Tenant extends Model
         'book',
         'rx',
         'audit-logs',
+        'webhooks',
+        'webhook',
     ];
 
     /**

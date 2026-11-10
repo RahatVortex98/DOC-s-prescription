@@ -73,6 +73,6 @@ Route::get('/rx/{public_id}', [PrescriptionPrintController::class, 'publicShare'
 
 // Public Tenant Patient Booking Route (must be registered last)
 Route::get('/{tenant:slug}', AppointmentManager::class)
-    ->where('tenant', '^(?!app$|login$|logout$|livewire$|admin$|api$|up$|build$|storage$|book$|rx$|audit-logs$)[a-z0-9._-]+$')
+    ->where('tenant', '^(?!app$|login$|logout$|livewire$|admin$|api$|up$|build$|storage$|book$|rx$|audit-logs$|webhooks$|webhook$)[a-z0-9._-]+$')
     ->middleware('throttle:30,1')
     ->name('appointment.public_book');

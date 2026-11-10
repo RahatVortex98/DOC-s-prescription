@@ -12,6 +12,12 @@ class Appointment extends Model
 {
     use BelongsToTenant, HasFactory, SoftDeletes;
 
+    public const SOURCE_QR = 'qr';
+
+    public const SOURCE_WHATSAPP = 'whatsapp';
+
+    public const SOURCE_RECEPTIONIST = 'receptionist';
+
     /**
      * @var list<string>
      */
@@ -29,6 +35,10 @@ class Appointment extends Model
         'appointment_time',
         'status',
         'notes',
+        'booking_source',
+        'booking_reference',
+        'confirmation_status',
+        'conversation_id',
     ];
 
     /**
