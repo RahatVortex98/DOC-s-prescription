@@ -54,6 +54,15 @@ class DoctorDashboard extends Component
             ->pluck('count', 'gender')
             ->toArray();
 
+        // Booking Channels Breakdown
+        $totalBookings = Appointment::count();
+        $channelStats = [
+            'total' => $totalBookings,
+            'whatsapp' => Appointment::where('booking_source', Appointment::SOURCE_WHATSAPP)->count(),
+            'qr' => Appointment::where('booking_source', Appointment::SOURCE_QR)->count(),
+            'receptionist' => Appointment::where('booking_source', Appointment::SOURCE_RECEPTIONIST)->count(),
+        ];
+
         // Recent Prescriptions
         $recentPrescriptions = Prescription::with(['patient', 'chamber'])
             ->latest('id')
@@ -62,6 +71,7 @@ class DoctorDashboard extends Component
 
         return view('livewire.doctor-dashboard', [
             'stats' => $stats,
+            'channelStats' => $channelStats,
             'topDiagnoses' => $topDiagnoses,
             'topMedicines' => $topMedicines,
             'chamberStats' => $chamberStats,

@@ -109,6 +109,68 @@
         </div>
     </div>
 
+    <!-- Appointment Booking Channels Breakdown (QR vs WhatsApp vs Walk-in) -->
+    <div class="bg-white rounded-xl shadow-sm border p-5 mb-6">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b pb-3 mb-4">
+            <div>
+                <h2 class="font-bold text-sm text-gray-800 flex items-center gap-2">
+                    <span>📊</span> Appointment Acquisition Channels
+                </h2>
+                <p class="text-xs text-gray-400">Distribution across automated WhatsApp Bot, Chamber QR Standee, and Walk-in Reception Desk</p>
+            </div>
+            <a href="{{ route('appointment.manager') }}" class="text-xs text-[#1e3fae] hover:underline font-bold">
+                Manage All Appointments →
+            </a>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-4 gap-4">
+            <div class="p-3.5 bg-slate-50 border rounded-xl">
+                <span class="text-[10px] font-bold text-gray-400 uppercase tracking-wider block mb-1">Total Appointments</span>
+                <span class="text-2xl font-black text-slate-900">{{ $channelStats['total'] }}</span>
+                <span class="text-[10px] text-gray-400 block mt-0.5">All-time bookings</span>
+            </div>
+
+            <div class="p-3.5 bg-emerald-50/70 border border-emerald-200/60 rounded-xl">
+                <span class="text-[10px] font-bold text-emerald-800 uppercase tracking-wider block mb-1">💬 WhatsApp Bot</span>
+                <div class="flex items-baseline justify-between">
+                    <span class="text-2xl font-black text-emerald-700">{{ $channelStats['whatsapp'] }}</span>
+                    <span class="text-xs font-bold text-emerald-600">
+                        {{ $channelStats['total'] > 0 ? round(($channelStats['whatsapp'] / $channelStats['total']) * 100) : 0 }}%
+                    </span>
+                </div>
+                <div class="w-full bg-emerald-100 rounded-full h-1.5 mt-2 overflow-hidden">
+                    <div class="bg-emerald-600 h-1.5 rounded-full" style="width: {{ $channelStats['total'] > 0 ? min(100, round(($channelStats['whatsapp'] / $channelStats['total']) * 100)) : 0 }}%"></div>
+                </div>
+            </div>
+
+            <div class="p-3.5 bg-blue-50/70 border border-blue-200/60 rounded-xl">
+                <span class="text-[10px] font-bold text-blue-800 uppercase tracking-wider block mb-1">📱 QR Standee</span>
+                <div class="flex items-baseline justify-between">
+                    <span class="text-2xl font-black text-blue-700">{{ $channelStats['qr'] }}</span>
+                    <span class="text-xs font-bold text-blue-600">
+                        {{ $channelStats['total'] > 0 ? round(($channelStats['qr'] / $channelStats['total']) * 100) : 0 }}%
+                    </span>
+                </div>
+                <div class="w-full bg-blue-100 rounded-full h-1.5 mt-2 overflow-hidden">
+                    <div class="bg-blue-600 h-1.5 rounded-full" style="width: {{ $channelStats['total'] > 0 ? min(100, round(($channelStats['qr'] / $channelStats['total']) * 100)) : 0 }}%"></div>
+                </div>
+            </div>
+
+            <div class="p-3.5 bg-slate-50 border border-slate-200 rounded-xl">
+                <span class="text-[10px] font-bold text-slate-700 uppercase tracking-wider block mb-1">🏢 Receptionist / Desk</span>
+                <div class="flex items-baseline justify-between">
+                    <span class="text-2xl font-black text-slate-800">{{ $channelStats['receptionist'] }}</span>
+                    <span class="text-xs font-bold text-slate-600">
+                        {{ $channelStats['total'] > 0 ? round(($channelStats['receptionist'] / $channelStats['total']) * 100) : 0 }}%
+                    </span>
+                </div>
+                <div class="w-full bg-slate-200 rounded-full h-1.5 mt-2 overflow-hidden">
+                    <div class="bg-slate-700 h-1.5 rounded-full" style="width: {{ $channelStats['total'] > 0 ? min(100, round(($channelStats['receptionist'] / $channelStats['total']) * 100)) : 0 }}%"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Recent Prescriptions Table -->
     <div class="bg-white rounded-xl shadow-sm border p-4">
         <div class="flex items-center justify-between border-b pb-3 mb-3">

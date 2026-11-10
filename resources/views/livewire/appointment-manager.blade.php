@@ -348,6 +348,38 @@
                     </div>
                 </div>
 
+                <!-- Booking Channel Filter Pills -->
+                <div class="flex items-center gap-1.5 mb-4 flex-wrap">
+                    <button
+                        type="button"
+                        wire:click="$set('filter_source', 'all')"
+                        class="px-2.5 py-1 rounded-lg text-xs font-bold transition cursor-pointer @if($filter_source === 'all') bg-[#1e3fae] text-white @else bg-slate-100 hover:bg-slate-200 text-slate-700 @endif"
+                    >
+                        All Bookings ({{ $sourceCounts['all'] ?? 0 }})
+                    </button>
+                    <button
+                        type="button"
+                        wire:click="$set('filter_source', 'whatsapp')"
+                        class="px-2.5 py-1 rounded-lg text-xs font-bold transition cursor-pointer flex items-center gap-1 @if($filter_source === 'whatsapp') bg-emerald-600 text-white @else bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 @endif"
+                    >
+                        <span>💬 WhatsApp</span> ({{ $sourceCounts['whatsapp'] ?? 0 }})
+                    </button>
+                    <button
+                        type="button"
+                        wire:click="$set('filter_source', 'qr')"
+                        class="px-2.5 py-1 rounded-lg text-xs font-bold transition cursor-pointer flex items-center gap-1 @if($filter_source === 'qr') bg-blue-600 text-white @else bg-blue-50 hover:bg-blue-100 text-blue-800 border border-blue-200 @endif"
+                    >
+                        <span>📱 QR Standee</span> ({{ $sourceCounts['qr'] ?? 0 }})
+                    </button>
+                    <button
+                        type="button"
+                        wire:click="$set('filter_source', 'receptionist')"
+                        class="px-2.5 py-1 rounded-lg text-xs font-bold transition cursor-pointer flex items-center gap-1 @if($filter_source === 'receptionist') bg-slate-800 text-white @else bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200 @endif"
+                    >
+                        <span>🏢 Receptionist</span> ({{ $sourceCounts['receptionist'] ?? 0 }})
+                    </button>
+                </div>
+
                 <div class="overflow-x-auto">
                     <table class="w-full text-left text-xs text-gray-600">
                         <thead class="bg-slate-50 text-[11px] font-bold text-gray-500 uppercase border-b">
@@ -374,6 +406,27 @@
                                             {{ $app->patient_age }}Y, {{ $app->patient_gender }}
                                             @if($app->patient_phone)
                                                 | <a href="tel:{{ $app->patient_phone }}" class="text-cyan-700 hover:underline">{{ $app->patient_phone }}</a>
+                                            @endif
+                                        </div>
+                                        <div class="flex items-center gap-1.5 mt-1">
+                                            @if($app->booking_source === 'whatsapp')
+                                                <span class="inline-flex items-center gap-0.5 px-1.5 py-0.2 rounded text-[9px] font-black bg-emerald-100 text-emerald-800 border border-emerald-200">
+                                                    💬 WhatsApp
+                                                </span>
+                                            @elseif($app->booking_source === 'qr')
+                                                <span class="inline-flex items-center gap-0.5 px-1.5 py-0.2 rounded text-[9px] font-black bg-blue-100 text-blue-800 border border-blue-200">
+                                                    📱 QR
+                                                </span>
+                                            @else
+                                                <span class="inline-flex items-center gap-0.5 px-1.5 py-0.2 rounded text-[9px] font-black bg-slate-100 text-slate-700 border border-slate-200">
+                                                    🏢 Desk
+                                                </span>
+                                            @endif
+
+                                            @if($app->booking_reference)
+                                                <span class="text-[9px] font-mono text-slate-500 font-bold bg-slate-50 px-1 py-0.2 rounded border border-slate-100">
+                                                    {{ $app->booking_reference }}
+                                                </span>
                                             @endif
                                         </div>
                                     </td>

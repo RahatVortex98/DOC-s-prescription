@@ -38,6 +38,8 @@ class AppointmentManager extends Component
 
     public bool $is_public_portal = false;
 
+    public string $filter_source = 'all'; // all, qr, whatsapp, receptionist
+
     public bool $consent = false;
 
     public ?string $successMessage = null;
@@ -219,17 +221,37 @@ class AppointmentManager extends Component
                 ? Chamber::withoutGlobalScope('tenant')->where('tenant_id', $this->tenant->id)->find($this->selected_chamber_id)
                 : null;
 
-            $todayAppointments = Appointment::withoutGlobalScope('tenant')
+            $baseQuery = Appointment::withoutGlobalScope('tenant')
                 ->where('tenant_id', $this->tenant->id)
                 ->where('chamber_id', $this->selected_chamber_id)
-                ->whereDate('appointment_date', $this->selected_date)
+                ->whereDate('appointment_date', $this->selected_date);
+
+            $sourceCounts = [
+                'all' => (clone $baseQuery)->count(),
+                'qr' => (clone $baseQuery)->where('booking_source', Appointment::SOURCE_QR)->count(),
+                'whatsapp' => (clone $baseQuery)->where('booking_source', Appointment::SOURCE_WHATSAPP)->count(),
+                'receptionist' => (clone $baseQuery)->where('booking_source', Appointment::SOURCE_RECEPTIONIST)->count(),
+            ];
+
+            $todayAppointments = $baseQuery
+                ->when($this->filter_source !== 'all', fn ($q) => $q->where('booking_source', $this->filter_source))
                 ->orderBy('serial_no')
                 ->get();
         } else {
             $activeChamber = Chamber::find($this->selected_chamber_id);
 
-            $todayAppointments = Appointment::where('chamber_id', $this->selected_chamber_id)
-                ->whereDate('appointment_date', $this->selected_date)
+            $baseQuery = Appointment::where('chamber_id', $this->selected_chamber_id)
+                ->whereDate('appointment_date', $this->selected_date);
+
+            $sourceCounts = [
+                'all' => (clone $baseQuery)->count(),
+                'qr' => (clone $baseQuery)->where('booking_source', Appointment::SOURCE_QR)->count(),
+                'whatsapp' => (clone $baseQuery)->where('booking_source', Appointment::SOURCE_WHATSAPP)->count(),
+                'receptionist' => (clone $baseQuery)->where('booking_source', Appointment::SOURCE_RECEPTIONIST)->count(),
+            ];
+
+            $todayAppointments = $baseQuery
+                ->when($this->filter_source !== 'all', fn ($q) => $q->where('booking_source', $this->filter_source))
                 ->orderBy('serial_no')
                 ->get();
         }
@@ -246,6 +268,7 @@ class AppointmentManager extends Component
             'activeChamber' => $activeChamber,
             'appointments' => $todayAppointments,
             'stats' => $stats,
+            'sourceCounts' => $sourceCounts,
         ])->layout('layouts.app');
     }
 }
