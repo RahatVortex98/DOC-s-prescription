@@ -603,4 +603,23 @@ class PrescriptionFeatureTest extends TestCase
         $response = $this->get(route('admin.tenants'));
         $response->assertStatus(403);
     }
+
+    public function test_super_admin_tenant_list_renders_with_counts_when_prescriptions_exist(): void
+    {
+        $this->app['auth']->logout();
+
+        $superAdmin = User::create([
+            'name' => 'Bikrify Super Admin 2',
+            'email' => 'admin2@bikrify.com',
+            'password' => bcrypt('password123'),
+            'role' => 'super_admin',
+            'tenant_id' => null,
+        ]);
+
+        $this->actingAs($superAdmin);
+
+        $response = $this->get(route('admin.tenants'));
+        $response->assertOk();
+        $response->assertSee('Tenant Management');
+    }
 }

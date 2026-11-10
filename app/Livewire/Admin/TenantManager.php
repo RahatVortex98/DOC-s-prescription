@@ -303,7 +303,12 @@ class TenantManager extends Component
 
     public function render(): View
     {
-        $tenants = Tenant::withCount(['users', 'chambers', 'prescriptions', 'patients'])
+        $tenants = Tenant::withCount([
+            'users',
+            'chambers' => fn ($q) => $q->withoutGlobalScope('tenant'),
+            'prescriptions' => fn ($q) => $q->withoutGlobalScope('tenant'),
+            'patients' => fn ($q) => $q->withoutGlobalScope('tenant'),
+        ])
             ->latest()
             ->get();
 

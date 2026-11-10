@@ -4,7 +4,7 @@
 [![Livewire](https://img.shields.io/badge/Livewire-4.x-FB70A9?style=for-the-badge&logo=livewire&logoColor=white)](https://livewire.laravel.com)
 [![PHP](https://img.shields.io/badge/PHP-8.4-777BB4?style=for-the-badge&logo=php&logoColor=white)](https://php.net)
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind-4.0-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white)](https://tailwindcss.com)
-[![Tests](https://img.shields.io/badge/PHPUnit-43%20Passing-brightgreen?style=for-the-badge&logo=github-actions&logoColor=white)](#automated-testing)
+[![Tests](https://img.shields.io/badge/PHPUnit-44%20Passing-brightgreen?style=for-the-badge&logo=github-actions&logoColor=white)](#automated-testing)
 [![License](https://img.shields.io/badge/License-MIT-blue?style=for-the-badge)](LICENSE)
 
 **Bikrify Prescription Studio** is a commercial-grade, multi-tenant clinical Prescribing Platform and Patient Queue Management SaaS built specifically for doctors, hospital consultants, polyclinics, and receptionists in Bangladesh and global private practice.
@@ -253,7 +253,7 @@ Log in at **`http://localhost:8000/login`** using any of the following credentia
 
 ## 🧪 Automated Testing
 
-This application includes a PHPUnit test suite with **43 passing tests** and **199 assertions** verifying:
+This application includes a PHPUnit test suite with **44 passing tests** and **201 assertions** verifying:
 - **Tenant Isolation**: Proves Tenant B cannot query, see, or search Tenant A's patients, prescriptions, or appointments.
 - **Route Authorization**: Proves cross-tenant access to `/app/prescriptions/{id}/print`, `/pdf`, and `/investigations` returns `404 Not Found`.
 - **Livewire ID Protection**: Proves passing another tenant's ID to Livewire actions returns `404 Not Found`.
@@ -282,7 +282,7 @@ php artisan test --compact
 
 A production-ready GitHub Actions workflow is included at `.github/workflows/tests.yml`:
 - Triggered automatically on every `push` and `pull_request` to `main`.
-- Sets up PHP 8.4, Node.js 20, SQLite database, runs migrations, verifies code styling with Laravel Pint, and executes the complete 43-test PHPUnit test suite.
+- Sets up PHP 8.4, Node.js 20, SQLite database, runs migrations, verifies code styling with Laravel Pint, and executes the complete 44-test PHPUnit test suite.
 
 ---
 
