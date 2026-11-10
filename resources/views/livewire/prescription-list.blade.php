@@ -3,15 +3,15 @@
     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b mb-6">
         <div>
             <div class="flex items-center gap-3">
-                <h1 class="text-2xl font-black text-cyan-800">Prescription Records</h1>
-                <span class="text-xs bg-cyan-100 text-cyan-800 font-bold px-2.5 py-0.5 rounded-full">
+                <h1 class="text-2xl font-black text-[#1e3fae]">Prescription Records</h1>
+                <span class="text-xs bg-blue-100 text-[#1e3fae] font-bold px-2.5 py-0.5 rounded-full">
                     Total: {{ $totalCount }} | Today: {{ $todayCount }}
                 </span>
             </div>
             <p class="text-xs text-gray-500 mt-1">Search past patient visits, reprint prescriptions, or export PDF</p>
         </div>
         <div class="flex items-center gap-2">
-            <a href="{{ route('prescription.builder') }}" class="bg-cyan-600 hover:bg-cyan-700 text-white text-xs font-bold py-2.5 px-5 rounded-lg shadow-sm transition flex items-center gap-1.5">
+            <a href="{{ route('prescription.builder') }}" class="bg-[#1e3fae] hover:bg-[#173087] text-white text-xs font-bold py-2.5 px-5 rounded-lg shadow-sm transition flex items-center gap-1.5">
                 <span>+</span> New Prescription
             </a>
         </div>
@@ -69,7 +69,7 @@
                         <tr class="hover:bg-slate-50 transition">
                             <td class="p-3">
                                 <div class="flex items-center gap-1.5">
-                                    <span class="font-bold text-cyan-800">{{ $rx->prescription_no }}</span>
+                                    <span class="font-bold text-[#1e3fae]">{{ $rx->prescription_no }}</span>
                                     @if($rx->isVoided())
                                         <span class="bg-red-100 text-red-700 font-extrabold px-1.5 py-0.5 rounded text-[10px] uppercase tracking-wider border border-red-200">
                                             VOID
@@ -118,7 +118,7 @@
                                 <a href="{{ route('prescription.print', $rx->id) }}" target="_blank" class="inline-block bg-slate-100 hover:bg-slate-200 text-slate-800 px-2 py-1 rounded text-xs font-bold transition">
                                     Print A4
                                 </a>
-                                <a href="{{ route('prescription.pdf', $rx->id) }}" class="inline-block bg-cyan-600 hover:bg-cyan-700 text-white px-2 py-1 rounded text-xs font-bold transition">
+                                <a href="{{ route('prescription.pdf', $rx->id) }}" class="inline-block bg-[#1e3fae] hover:bg-[#173087] text-white px-2 py-1 rounded text-xs font-bold transition">
                                     PDF
                                 </a>
                                 @if(! $rx->isVoided() && ! auth()->user()?->isAssistant())

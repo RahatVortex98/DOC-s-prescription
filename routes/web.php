@@ -13,9 +13,17 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
-// Redirect root to main app
+// Intelligent Root Redirection
 Route::get('/', function () {
-    return redirect()->route('prescription.builder');
+    if (Auth::check()) {
+        if (Auth::user()->isSuperAdmin()) {
+            return redirect()->route('admin.tenants');
+        }
+
+        return redirect()->route('prescription.builder');
+    }
+
+    return redirect()->route('login');
 });
 
 // Authentication Routes

@@ -1,6 +1,6 @@
 @php
     $tenant = $prescription->tenant;
-    $brandColor = $tenant?->brand_color ?: '#0891b2';
+    $brandColor = $tenant?->brand_color ?: '#1e3fae';
     $bmdcNo = $prescription->doctor_bmdc_no ?: $tenant?->bmdc_no;
 @endphp
 <!DOCTYPE html>

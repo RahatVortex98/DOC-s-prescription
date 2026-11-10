@@ -23,7 +23,7 @@ class TemplateAndDrugKitSeeder extends Seeder
                     'doctor_designation' => 'Professor & Chief Consultant, Department of Nephrology',
                     'specialty' => 'Nephrology / CKD Specialist',
                     'doctor_description' => 'Professor and Head of Nephrology. Dedicated kidney care and dialysis management.',
-                    'brand_color' => '#0891b2',
+                    'brand_color' => '#1e3fae',
                 ]),
             ]);
         }

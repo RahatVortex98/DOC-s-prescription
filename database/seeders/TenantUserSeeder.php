@@ -22,7 +22,7 @@ class TenantUserSeeder extends Seeder
                 'doctor_designation' => 'Professor & Chief Consultant, Department of Nephrology',
                 'specialty' => 'Nephrology / CKD Specialist',
                 'doctor_description' => 'Professor and Head of Nephrology. Over 20 years of clinical experience in advanced kidney diseases, hypertension, and dialysis therapy.',
-                'brand_color' => '#0891b2',
+                'brand_color' => '#1e3fae',
             ]
         );
 

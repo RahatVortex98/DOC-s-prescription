@@ -219,15 +219,15 @@ The database seeder automatically creates:
 
 ---
 
-## 🔑 Default Seeded Accounts
+## 🔑 Demo Access & Default Seeded Accounts
 
-Log in at **`http://localhost:8000/login`** using any of the following credentials:
+The login portal at **`http://localhost:8000/login`** features instant **⚡ 1-Click Demo Login** buttons for effortless testing:
 
-| Role | Email | Password | Access & Purpose |
-| :--- | :--- | :--- | :--- |
-| **Doctor** | `doctor@bikrify.com` | `password` | **Clinical Studio**: Full prescribing workspace, patient history, and analytics. |
-| **Assistant** | `assistant@bikrify.com` | `password` | **Front-Desk**: Queue booking & status updates (clinical findings/diagnosis masked). |
-| **Super Admin** | `admin@bikrify.com` | `password` | **Bikrify Portal**: Provision and govern doctor clinics at `http://localhost:8000/admin/tenants`. |
+| Role | 1-Click Demo Button | Email | Password | Access & Purpose |
+| :--- | :--- | :--- | :--- | :--- |
+| **Doctor** | `[ 🩺 Doctor ]` | `doctor@bikrify.com` | `password` | **Clinical Studio**: Full prescribing workspace, patient history, and analytics. |
+| **Assistant** | `[ 📋 Assistant ]` | `assistant@bikrify.com` | `password` | **Front-Desk**: Queue booking & status updates (clinical findings/diagnosis masked). |
+| **Super Admin** | `[ 🛡️ Admin ]` | `admin@bikrify.com` | `password` | **Governance Portal**: Provision and govern doctor clinics at `/admin/tenants`. |
 
 ---
 

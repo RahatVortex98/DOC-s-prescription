@@ -18,6 +18,27 @@ class Login extends Component
 
     public bool $remember = false;
 
+    public function fillDemo(string $role = 'doctor'): void
+    {
+        if ($role === 'super_admin') {
+            $this->email = 'admin@bikrify.com';
+            $this->password = 'password';
+        } elseif ($role === 'assistant') {
+            $this->email = 'assistant@bikrify.com';
+            $this->password = 'password';
+        } else {
+            $this->email = 'doctor@bikrify.com';
+            $this->password = 'password';
+        }
+    }
+
+    public function loginAsDemo(string $role = 'doctor')
+    {
+        $this->fillDemo($role);
+
+        return $this->login();
+    }
+
     public function login()
     {
         $this->validate([

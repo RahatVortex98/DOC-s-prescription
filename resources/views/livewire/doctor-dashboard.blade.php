@@ -2,11 +2,11 @@
     <!-- Header -->
     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b mb-6">
         <div>
-            <h1 class="text-2xl font-black text-cyan-800">Doctor Practice Analytics</h1>
+            <h1 class="text-2xl font-black text-[#1e3fae]">Doctor Practice Analytics</h1>
             <p class="text-xs text-gray-500 mt-1">Real-time overview of consultations, patient demographics, and top prescribed treatments</p>
         </div>
         <div class="flex items-center gap-2">
-            <a href="{{ route('prescription.builder') }}" class="bg-cyan-600 hover:bg-cyan-700 text-white text-xs font-bold py-2 px-4 rounded-lg shadow-sm transition flex items-center gap-1.5">
+            <a href="{{ route('prescription.builder') }}" class="bg-[#1e3fae] hover:bg-[#173087] text-white text-xs font-bold py-2 px-4 rounded-lg shadow-sm transition flex items-center gap-1.5">
                 <span>℞</span> New Prescription
             </a>
             <a href="{{ route('appointment.manager') }}" class="bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold py-2 px-4 rounded-lg border transition flex items-center gap-1.5">
@@ -19,7 +19,7 @@
     <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
         <div class="bg-white rounded-xl shadow-sm border p-4">
             <div class="text-[11px] font-bold text-gray-400 uppercase">Today's Prescriptions</div>
-            <div class="text-2xl font-black text-cyan-800 mt-1">{{ $stats['prescriptions_today'] }}</div>
+            <div class="text-2xl font-black text-[#1e3fae] mt-1">{{ $stats['prescriptions_today'] }}</div>
             <div class="text-[10px] text-gray-500 mt-0.5">This Month: <strong>{{ $stats['prescriptions_this_month'] }}</strong></div>
         </div>
 

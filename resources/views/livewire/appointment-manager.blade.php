@@ -3,16 +3,19 @@
         <!-- Public Patient Self-Booking Portal Mode -->
         <div class="max-w-xl mx-auto space-y-5">
             <!-- Doctor & Chamber Header Card -->
-            <div class="bg-gradient-to-r from-cyan-900 to-slate-900 text-white rounded-2xl p-6 shadow-xl">
+            <div class="bg-gradient-to-r from-[#173087] via-[#1e3fae] to-[#0f246b] text-white rounded-2xl p-6 shadow-xl">
                 @if($activeChamber)
-                    <span class="bg-amber-400 text-cyan-950 text-[11px] font-black px-2.5 py-0.5 rounded-full uppercase tracking-wider">
-                        {{ $activeChamber->specialty }}
-                    </span>
-                    <h1 class="text-xl font-black mt-2 text-white">{{ $activeChamber->doctor_name }}</h1>
-                    <p class="text-xs text-cyan-200 mt-0.5">{{ $activeChamber->doctor_qualification }}</p>
-                    <p class="text-xs text-cyan-300 font-semibold mt-0.5">{{ $activeChamber->doctor_designation }}</p>
+                    <div class="flex items-center gap-2 mb-2">
+                        <img src="{{ asset('images/bikrify-logo.png') }}" class="w-6 h-6 rounded-md">
+                        <span class="bg-[#ff6200] text-white text-[11px] font-black px-2.5 py-0.5 rounded-full uppercase tracking-wider">
+                            {{ $activeChamber->specialty }}
+                        </span>
+                    </div>
+                    <h1 class="text-xl font-black text-white">{{ $activeChamber->doctor_name }}</h1>
+                    <p class="text-xs text-blue-100 mt-0.5">{{ $activeChamber->doctor_qualification }}</p>
+                    <p class="text-xs text-orange-200 font-semibold mt-0.5">{{ $activeChamber->doctor_designation }}</p>
 
-                    <div class="mt-4 pt-3 border-t border-cyan-800 text-xs text-cyan-100 space-y-1">
+                    <div class="mt-4 pt-3 border-t border-blue-800 text-xs text-blue-100 space-y-1">
                         <div><strong>🏥 Hospital:</strong> {{ $activeChamber->name }}</div>
                         @if($activeChamber->room_number)
                             <div><strong>Room / Chamber:</strong> {{ $activeChamber->room_number }}</div>
@@ -300,28 +303,32 @@
                             <textarea wire:model="notes" rows="2" class="w-full border rounded-md p-2 text-xs bg-gray-50 focus:bg-white" placeholder="e.g. Kidney pain, blood pressure checkup"></textarea>
                         </div>
 
-                        <button type="submit" class="w-full bg-cyan-600 hover:bg-cyan-700 text-white font-bold py-2.5 px-4 rounded-lg text-xs shadow-sm transition flex items-center justify-center gap-1.5 cursor-pointer">
+                        <button type="submit" class="w-full bg-[#1e3fae] hover:bg-[#173087] text-white font-bold py-2.5 px-4 rounded-lg text-xs shadow-sm transition flex items-center justify-center gap-1.5 cursor-pointer">
                             <span>+</span> Issue Serial Token & Add to Queue
                         </button>
                     </form>
                 </div>
 
                 <!-- "No Receptionist" Automated Public Link Card -->
-                <div class="bg-gradient-to-br from-cyan-50 to-indigo-50 rounded-xl border border-cyan-200 p-4 text-xs text-gray-700">
-                    <div class="flex items-center gap-1.5 font-bold text-cyan-900 mb-1">
-                        <span>💡</span> No Receptionist Solution (Self-Booking)
+                @php
+                    $tenantSlug = auth()->user()?->tenant?->slug;
+                    $publicBookingUrl = $tenantSlug ? route('appointment.public_book', $tenantSlug) : url('/');
+                @endphp
+                <div class="bg-gradient-to-br from-blue-50 to-orange-50 rounded-xl border border-blue-200 p-4 text-xs text-gray-700">
+                    <div class="flex items-center gap-1.5 font-bold text-[#1e3fae] mb-1">
+                        <span>💡</span> Patient Self-Booking Portal Link
                     </div>
                     <p class="text-[11px] text-gray-600 mb-3">
-                        If the doctor has no receptionist, place a QR code outside the chamber door or share this public link. Patients can book on their phone and automatically get their serial token:
+                        Share this public link with patients or print the door QR poster so patients can self-book serial tokens on their mobile phone:
                     </p>
-                    <div class="bg-white border rounded p-2 text-[11px] font-mono text-cyan-800 break-all select-all flex items-center justify-between mb-3">
-                        <span>{{ url('/book/' . ($selected_chamber_id ?? 1)) }}</span>
-                        <button type="button" onclick="navigator.clipboard.writeText('{{ url('/book/' . ($selected_chamber_id ?? 1)) }}'); alert('Link copied to clipboard!');" class="text-[10px] bg-cyan-100 hover:bg-cyan-200 text-cyan-800 px-2 py-0.5 rounded font-bold ml-1 cursor-pointer">
+                    <div class="bg-white border rounded-lg p-2 text-[11px] font-mono text-[#1e3fae] break-all select-all flex items-center justify-between mb-3">
+                        <span class="truncate mr-2">{{ $publicBookingUrl }}</span>
+                        <button type="button" onclick="navigator.clipboard.writeText('{{ $publicBookingUrl }}'); alert('Link copied to clipboard!');" class="text-[10px] bg-blue-100 hover:bg-blue-200 text-[#1e3fae] px-2 py-1 rounded font-bold whitespace-nowrap cursor-pointer">
                             Copy Link
                         </button>
                     </div>
 
-                    <a href="{{ route('chamber.qr_standee', $selected_chamber_id ?? 1) }}" target="_blank" class="w-full bg-cyan-700 hover:bg-cyan-800 text-white font-bold py-2 px-3 rounded-lg text-xs flex items-center justify-center gap-1.5 transition text-center shadow-xs">
+                    <a href="{{ route('chamber.qr_standee', $selected_chamber_id ?? 1) }}" target="_blank" class="w-full bg-[#1e3fae] hover:bg-[#173087] text-white font-bold py-2 px-3 rounded-lg text-xs flex items-center justify-center gap-1.5 transition text-center shadow-xs">
                         <span>🖨️</span> Print Chamber Door QR Poster (A4)
                     </a>
                 </div>

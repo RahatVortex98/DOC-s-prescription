@@ -1,7 +1,7 @@
 @php
     $tenant = $prescription->tenant;
     $patient = $prescription->patient;
-    $brandColor = $tenant?->brand_color ?: '#0891b2';
+    $brandColor = $tenant?->brand_color ?: '#1e3fae';
     $bmdcNo = $prescription->doctor_bmdc_no ?: $tenant?->bmdc_no;
 @endphp
 <!DOCTYPE html>
@@ -19,7 +19,7 @@
         .doc-desig { font-size: 11px; color: {{ $brandColor }}; font-weight: 600; margin-top: 2px; }
         .chamber-title { font-weight: bold; font-size: 15px; color: {{ $brandColor }}; }
         .chamber-info { font-size: 11px; color: #6b7280; margin-top: 2px; }
-        .patient-strip { background: #f0fdfa; border: 1px solid #ccfbf1; padding: 8px 12px; margin: 10px 0 15px 0; }
+        .patient-strip { background: #f0f5ff; border: 1px solid #dbeafe; padding: 8px 12px; margin: 10px 0 15px 0; border-radius: 6px; }
         .patient-cell { font-size: 12px; color: #1e293b; }
         .body-table { min-height: 650px; }
         .left-col { width: 35%; border-right: 1.5px solid #e2e8f0; padding-right: 15px; vertical-align: top; }
@@ -105,6 +105,11 @@
                 @if($tenant?->logo_path)
                     <div style="margin-bottom: 8px;">
                         <img src="{{ asset('storage/' . $tenant->logo_path) }}" alt="Logo" style="max-height: 48px; max-width: 180px; object-fit: contain;">
+                    </div>
+                @else
+                    <div style="margin-bottom: 8px; display: inline-flex; align-items: center; gap: 8px;">
+                        <img src="{{ asset('images/bikrify-logo.png') }}" alt="Bikrify" style="height: 32px; width: 32px; border-radius: 6px; vertical-align: middle;">
+                        <span style="font-weight: 900; font-size: 15px; color: #1e3fae; vertical-align: middle;">Bikrify <span style="color: #ff6200;">Health</span></span>
                     </div>
                 @endif
                 <div class="doc-name">{{ $prescription->doctor_name }}</div>

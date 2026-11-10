@@ -223,22 +223,22 @@
 }">
 
     <!-- Top Header: Verified Doctor Identity & Hospital Chamber Profile -->
-    <div class="bg-gradient-to-r from-cyan-950 via-cyan-900 to-slate-900 text-white rounded-2xl shadow-lg p-5 mb-4 border border-cyan-800/40">
+    <div class="bg-gradient-to-r from-[#173087] via-[#1e3fae] to-[#0f246b] text-white rounded-2xl shadow-lg p-5 mb-4 border border-blue-800/40">
         <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
             <!-- Doctor Identity Profile (Pre-configured by Super Admin) -->
             <div class="space-y-1.5 flex-1">
                 <div class="flex flex-wrap items-center gap-2">
-                    <span class="bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 text-xs font-bold px-2.5 py-0.5 rounded-full flex items-center gap-1">
-                        <svg class="w-3.5 h-3.5 text-cyan-400" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>
+                    <span class="bg-white/10 text-white border border-white/20 text-xs font-bold px-2.5 py-0.5 rounded-full flex items-center gap-1.5">
+                        <img src="{{ asset('images/bikrify-logo.png') }}" class="w-3.5 h-3.5 rounded-xs">
                         Bikrify Verified Doctor
                     </span>
                     @if($bmdc_no)
-                        <span class="text-xs bg-slate-800/70 text-cyan-200 px-2.5 py-0.5 rounded-md border border-cyan-700/40 font-mono">
+                        <span class="text-xs bg-slate-900/60 text-blue-200 px-2.5 py-0.5 rounded-md border border-blue-700/40 font-mono">
                             BMDC: {{ $bmdc_no }}
                         </span>
                     @endif
                     @if($specialty)
-                        <span class="text-xs bg-cyan-800/70 text-cyan-200 px-2.5 py-0.5 rounded-md font-semibold">
+                        <span class="text-xs bg-blue-900/70 text-blue-200 px-2.5 py-0.5 rounded-md font-semibold">
                             {{ $specialty }}
                         </span>
                     @endif
@@ -248,25 +248,25 @@
                     <h1 class="text-2xl font-black tracking-tight text-white flex items-center gap-2">
                         {{ $doctor_name }}
                     </h1>
-                    <p class="text-xs text-cyan-200 font-medium">{{ $doctor_qualification }}</p>
-                    <p class="text-xs text-cyan-300 font-semibold">{{ $doctor_designation }}</p>
+                    <p class="text-xs text-blue-100 font-medium">{{ $doctor_qualification }}</p>
+                    <p class="text-xs text-orange-200 font-semibold">{{ $doctor_designation }}</p>
                 </div>
 
                 <!-- Hospital Practice Location & Visiting Hours -->
-                <div class="pt-2 text-xs text-cyan-100 flex flex-wrap items-center gap-x-4 gap-y-1.5 border-t border-cyan-800/50">
+                <div class="pt-2 text-xs text-blue-100 flex flex-wrap items-center gap-x-4 gap-y-1.5 border-t border-blue-800/50">
                     <div class="flex items-center gap-1.5">
-                        <span class="font-bold text-amber-300">🏥 Hospital / Chamber:</span>
+                        <span class="font-bold text-[#ff6200]">🏥 Hospital / Chamber:</span>
                         <span class="font-bold text-white">{{ $chamber_name }}</span>
-                        @if($room_number) <span class="text-cyan-300">({{ $room_number }})</span> @endif
+                        @if($room_number) <span class="text-orange-200">({{ $room_number }})</span> @endif
                     </div>
                     @if($chamber_address)
                         <div>
-                            <span class="text-cyan-200">📍 {{ $chamber_address }}</span>
+                            <span class="text-blue-100">📍 {{ $chamber_address }}</span>
                         </div>
                     @endif
                     @if($chamber_visiting_hours)
                         <div>
-                            <span class="text-cyan-200">⏰ Visiting: <strong class="text-white">{{ $chamber_visiting_hours }}</strong></span>
+                            <span class="text-blue-100">⏰ Visiting: <strong class="text-white">{{ $chamber_visiting_hours }}</strong></span>
                         </div>
                     @endif
                     @if($chamber_phone)
@@ -283,10 +283,10 @@
             </div>
 
             <!-- Top Right Action Controls -->
-            <div class="flex flex-col sm:flex-row lg:flex-col items-end gap-2.5">
-                <div class="flex items-center gap-2">
+            <div class="flex flex-col sm:flex-row lg:flex-col items-start sm:items-center lg:items-end gap-2.5">
+                <div class="flex flex-wrap items-center gap-2">
                     @if($allChambers->count() > 1)
-                        <select wire:change="selectChamber($event.target.value)" class="text-xs font-bold text-gray-800 border rounded-lg px-3 py-2 bg-white shadow-sm focus:ring-2 focus:ring-cyan-500" title="Switch Chamber Branch">
+                        <select wire:change="selectChamber($event.target.value)" class="text-xs font-bold text-gray-800 border rounded-lg px-3 py-2 bg-white shadow-sm focus:ring-2 focus:ring-[#1e3fae]" title="Switch Chamber Branch">
                             @foreach($allChambers as $c)
                                 <option value="{{ $c->id }}" @selected($selected_chamber_id == $c->id)>
                                     {{ $c->name }}
@@ -296,16 +296,16 @@
                     @endif
 
                     @if($selected_chamber_id)
-                        <a href="{{ route('chamber.qr_standee', $selected_chamber_id) }}" target="_blank" class="text-xs bg-slate-800 hover:bg-slate-700 text-cyan-200 px-3 py-2 rounded-lg font-bold transition flex items-center gap-1 border border-slate-700" title="Print Chamber Door QR Standee">
+                        <a href="{{ route('chamber.qr_standee', $selected_chamber_id) }}" target="_blank" class="text-xs bg-slate-900/80 hover:bg-slate-800 text-blue-200 px-3 py-2 rounded-lg font-bold transition flex items-center gap-1 border border-blue-900/50" title="Print Chamber Door QR Standee">
                             <span>📲</span> Door QR
                         </a>
                     @endif
 
-                    <a href="{{ route('appointment.manager') }}" class="bg-cyan-800 hover:bg-cyan-700 text-cyan-100 text-xs font-bold px-3 py-2 rounded-lg border border-cyan-600/40 transition flex items-center gap-1.5">
+                    <a href="{{ route('appointment.manager') }}" class="bg-blue-900/80 hover:bg-blue-800 text-white text-xs font-bold px-3 py-2 rounded-lg border border-blue-700/50 transition flex items-center gap-1.5">
                         <span>👥</span> Queue Desk
                     </a>
 
-                    <button wire:click="saveAndPrint" class="bg-emerald-500 hover:bg-emerald-600 text-white font-black py-2 px-5 rounded-lg shadow-md transition flex items-center gap-2 cursor-pointer text-xs">
+                    <button wire:click="saveAndPrint" class="bg-[#ff6200] hover:bg-[#ea580c] text-white font-black py-2 px-5 rounded-lg shadow-md transition flex items-center gap-2 cursor-pointer text-xs">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path></svg>
                         Save & Print
                     </button>
@@ -315,12 +315,12 @@
     </div>
 
     <!-- Voice Activate Studio Assistant Bar -->
-    <div class="bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 text-white rounded-xl p-3 mb-5 shadow-md border border-indigo-900/50 flex flex-col md:flex-row md:items-center justify-between gap-3">
-        <div class="flex items-center gap-2.5">
+    <div class="bg-gradient-to-r from-slate-900 via-[#173087] to-slate-900 text-white rounded-xl p-3 mb-5 shadow-md border border-blue-900/50 flex flex-col md:flex-row md:items-center justify-between gap-3">
+        <div class="flex items-center gap-2.5 flex-wrap">
             <button
                 type="button"
                 @click="toggleMasterVoice"
-                :class="isListeningMaster ? 'bg-rose-600 hover:bg-rose-700 ring-4 ring-rose-400/40 animate-pulse' : 'bg-cyan-500 hover:bg-cyan-400 text-slate-950'"
+                :class="isListeningMaster ? 'bg-[#ff6200] hover:bg-[#ea580c] ring-4 ring-orange-400/40 animate-pulse' : 'bg-[#1e3fae] hover:bg-[#1d4ed8] text-white border border-blue-400/30'"
                 class="px-3.5 py-1.5 rounded-lg font-black text-xs flex items-center gap-2 shadow transition cursor-pointer"
             >
                 <span class="text-sm" x-text="isListeningMaster ? '🔴' : '🎙️'"></span>
@@ -332,7 +332,7 @@
                 <button
                     type="button"
                     @click="setLang('en-US')"
-                    :class="speechLang === 'en-US' ? 'bg-cyan-600 text-white' : 'text-slate-400 hover:text-white'"
+                    :class="speechLang === 'en-US' ? 'bg-[#ff6200] text-white' : 'text-slate-400 hover:text-white'"
                     class="px-2 py-0.5 rounded transition"
                 >
                     🇺🇸 English
@@ -340,7 +340,7 @@
                 <button
                     type="button"
                     @click="setLang('bn-BD')"
-                    :class="speechLang === 'bn-BD' ? 'bg-cyan-600 text-white' : 'text-slate-400 hover:text-white'"
+                    :class="speechLang === 'bn-BD' ? 'bg-[#ff6200] text-white' : 'text-slate-400 hover:text-white'"
                     class="px-2 py-0.5 rounded transition"
                 >
                     🇧🇩 বাংলা
@@ -351,7 +351,7 @@
             <button
                 type="button"
                 @click="showVoiceGuide = true"
-                class="text-[11px] bg-slate-800 hover:bg-slate-700 text-cyan-300 px-2.5 py-1 rounded-md border border-slate-700 flex items-center gap-1 transition"
+                class="text-[11px] bg-slate-800 hover:bg-slate-700 text-blue-200 px-2.5 py-1 rounded-md border border-slate-700 flex items-center gap-1 transition cursor-pointer"
             >
                 <span>💡</span> Voice Guide
             </button>
@@ -359,12 +359,12 @@
 
         <!-- Live Real-Time Voice Activity / Feedback Status -->
         <div class="flex-1 md:text-right text-xs">
-            <div x-show="voiceFeedback" class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-slate-800/90 border border-cyan-500/30 text-cyan-200">
-                <span class="inline-block w-2 h-2 rounded-full bg-cyan-400 animate-ping" x-show="isListeningMaster"></span>
+            <div x-show="voiceFeedback" class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-slate-800/90 border border-blue-500/30 text-blue-200">
+                <span class="inline-block w-2 h-2 rounded-full bg-[#ff6200] animate-ping" x-show="isListeningMaster"></span>
                 <span x-text="voiceFeedback" class="font-medium truncate max-w-md"></span>
             </div>
-            <div x-show="!voiceFeedback" class="text-slate-400 text-[11px]">
-                Click <strong class="text-cyan-300">Voice Activate Studio</strong> to prescribe by voice (English & বাংলা supported)
+            <div x-show="!voiceFeedback" class="text-slate-300 text-[11px]">
+                Click <strong class="text-white">Voice Activate Studio</strong> to prescribe by voice (English & বাংলা supported)
             </div>
         </div>
     </div>
@@ -380,8 +380,8 @@
                 @foreach($todayAppointments as $qApp)
                     <button type="button"
                             wire:click="callQueuePatient({{ $qApp->id }})"
-                            class="text-xs px-3 py-1.5 rounded-lg font-bold border transition flex items-center gap-1.5 whitespace-nowrap cursor-pointer @if($current_appointment_id == $qApp->id) bg-cyan-700 text-white border-cyan-800 shadow-xs @else bg-white hover:bg-amber-100 text-amber-900 border-amber-300 @endif">
-                        <span class="w-5 h-5 rounded-full bg-amber-400 text-cyan-950 font-black text-[11px] flex items-center justify-center">#{{ $qApp->serial_no }}</span>
+                            class="text-xs px-3 py-1.5 rounded-lg font-bold border transition flex items-center gap-1.5 whitespace-nowrap cursor-pointer @if($current_appointment_id == $qApp->id) bg-[#1e3fae] text-white border-blue-900 shadow-xs @else bg-white hover:bg-orange-50 text-slate-800 border-amber-300 @endif">
+                        <span class="w-5 h-5 rounded-full bg-[#ff6200] text-white font-black text-[11px] flex items-center justify-center">#{{ $qApp->serial_no }}</span>
                         <span>{{ $qApp->patient_name }} ({{ $qApp->patient_age }}Y)</span>
                         <span class="text-[10px] text-amber-700">@if($current_appointment_id == $qApp->id) (Active) @else (Call) @endif</span>
                     </button>
@@ -482,22 +482,22 @@
     </div>
 
     <!-- Less Input Bar: 1-Click Clinical Full Bundles & Quick Drug Kits (DB-driven) -->
-    <div class="bg-gradient-to-r from-cyan-50 via-slate-50 to-amber-50 border border-cyan-200 rounded-xl p-3 mb-5">
+    <div class="bg-gradient-to-r from-blue-50/80 via-slate-50 to-orange-50/60 border border-blue-200 rounded-xl p-3 mb-5">
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div class="flex items-center gap-2 flex-wrap">
-                <span class="text-xs font-black uppercase text-cyan-900 flex items-center gap-1">
+                <span class="text-xs font-black uppercase text-[#1e3fae] flex items-center gap-1">
                     <span>⚡</span> 1-Click Clinical Bundles:
                 </span>
                 @forelse($templates as $tpl)
                     <button type="button"
                             wire:click="applySpecialtyBundle({{ $tpl->id }})"
-                            class="bg-cyan-700 hover:bg-cyan-800 text-white text-xs px-3 py-1 rounded-md font-bold transition shadow-xs cursor-pointer flex items-center gap-1">
+                            class="bg-[#1e3fae] hover:bg-[#173087] text-white text-xs px-3 py-1 rounded-md font-bold transition shadow-xs cursor-pointer flex items-center gap-1">
                         {{ $tpl->name }}
                     </button>
                 @empty
                     <button type="button"
                             wire:click="applySpecialtyBundle"
-                            class="bg-cyan-700 hover:bg-cyan-800 text-white text-xs px-3 py-1 rounded-md font-bold transition shadow-xs cursor-pointer">
+                            class="bg-[#1e3fae] hover:bg-[#173087] text-white text-xs px-3 py-1 rounded-md font-bold transition shadow-xs cursor-pointer">
                         ⚡ Quick Specialty Protocol
                     </button>
                 @endforelse
@@ -505,11 +505,11 @@
 
             <!-- 1-Click Drug Kits -->
             <div class="flex items-center gap-2 flex-wrap">
-                <span class="text-xs font-bold text-gray-600">Quick Drug Kits:</span>
+                <span class="text-xs font-bold text-slate-700">Quick Drug Kits:</span>
                 @forelse($drugKits as $kIdx => $dKit)
                     <button type="button"
                             wire:click="applyDrugKit({{ $dKit->id }})"
-                            class="bg-white hover:bg-amber-100 text-amber-900 border border-amber-300 text-xs px-2.5 py-1 rounded-md font-bold transition shadow-xs cursor-pointer">
+                            class="bg-white hover:bg-orange-50 text-slate-800 border border-orange-200 hover:border-[#ff6200] text-xs px-2.5 py-1 rounded-md font-bold transition shadow-xs cursor-pointer">
                         {{ $dKit->name }}
                     </button>
                 @empty
@@ -538,7 +538,7 @@
                         </select>
                     </div>
                 </div>
-                <select wire:model.live="specialty" class="w-full border rounded-md p-1.5 text-xs font-bold text-cyan-800 bg-cyan-50">
+                <select wire:model.live="specialty" class="w-full border border-blue-200 rounded-md p-1.5 text-xs font-bold text-[#1e3fae] bg-blue-50 focus:ring-2 focus:ring-[#1e3fae]">
                     <option value="General Medicine">General Medicine</option>
                     <option value="Nephrology / CKD Specialist">Nephrology / CKD Specialist</option>
                     <option value="Cardiology">Cardiology</option>
@@ -713,7 +713,7 @@
             <!-- Medicine Search Bar -->
             <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b mb-4">
                 <div class="flex items-center gap-2">
-                    <span class="text-3xl font-serif font-black text-cyan-900">℞</span>
+                    <span class="text-3xl font-serif font-black text-[#1e3fae]">℞</span>
                     <span class="text-xs font-bold text-gray-500 uppercase">Prescribed Medicines</span>
                 </div>
 
@@ -722,7 +722,7 @@
                         <input type="text"
                                wire:model.live.debounce.200ms="search"
                                placeholder="Search 42,000+ medicines (e.g. Napa, Napa Extra, Ketosteril)..."
-                               class="w-full border rounded-md pl-3 pr-8 py-1.5 text-xs bg-gray-50 focus:bg-white focus:ring-1 focus:ring-cyan-500">
+                               class="w-full border rounded-md pl-3 pr-8 py-1.5 text-xs bg-gray-50 focus:bg-white focus:ring-1 focus:ring-[#1e3fae]">
                         @if($search)
                             <button type="button" wire:click="$set('search', '')" class="absolute right-2 top-1.5 text-gray-400 hover:text-gray-600 font-bold text-xs">✕</button>
                         @endif
@@ -737,10 +737,10 @@
                             @foreach($searchResults as $res)
                                 <button type="button"
                                         wire:click="addItem({{ json_encode(['type' => $res['dosage_form'] ?? 'Tab.', 'name' => $res['brand_name'], 'generic' => $res['generic_name'], 'strength' => $res['strength'], 'dosage' => '1+0+1', 'duration' => '7 days', 'instruction' => 'After meal (খাবার পরে)']) }})"
-                                        class="w-full text-left px-3 py-2 text-xs hover:bg-cyan-50 border-b flex flex-col justify-between cursor-pointer">
+                                        class="w-full text-left px-3 py-2 text-xs hover:bg-blue-50 border-b flex flex-col justify-between cursor-pointer">
                                     <div class="flex items-center justify-between">
                                         <span class="font-bold text-gray-800">
-                                            <span class="text-cyan-700">{{ $res['dosage_form'] }}</span> {{ $res['brand_name'] }}
+                                            <span class="text-[#1e3fae] font-bold">{{ $res['dosage_form'] }}</span> {{ $res['brand_name'] }}
                                             @if($res['strength']) <span class="text-gray-600 font-normal">({{ $res['strength'] }})</span> @endif
                                         </span>
                                         <span class="text-[10px] text-gray-400 truncate max-w-[120px]">{{ $res['manufacturer'] }}</span>
@@ -850,7 +850,7 @@
                         <!-- Timing Dropdown (1+0+0, 1+0+1, etc.) -->
                         <div class="sm:col-span-2">
                             <label class="block sm:hidden text-[10px] font-bold text-gray-500 uppercase">Timing</label>
-                            <select wire:model="items.{{ $i }}.dosage" class="w-full text-xs border rounded p-1.5 bg-white font-bold text-center text-cyan-800">
+                            <select wire:model="items.{{ $i }}.dosage" class="w-full text-xs border rounded p-1.5 bg-white font-bold text-center text-[#1e3fae]">
                                 @if(!isset($stdDosages[$curDosage]))
                                     <option value="{{ $curDosage }}" selected>{{ $curDosage }}</option>
                                 @endif
@@ -898,7 +898,7 @@
             </div>
 
             <!-- Add Row Button -->
-            <button type="button" wire:click="addItem" class="mt-4 text-xs font-bold text-cyan-700 hover:text-cyan-900 bg-cyan-50 hover:bg-cyan-100 border border-cyan-200 px-3 py-1.5 rounded-md flex items-center gap-1.5 transition cursor-pointer">
+            <button type="button" wire:click="addItem" class="mt-4 text-xs font-bold text-[#1e3fae] hover:text-[#173087] bg-blue-50 hover:bg-blue-100 border border-blue-200 px-3 py-1.5 rounded-md flex items-center gap-1.5 transition cursor-pointer">
                 <span>+</span> Add Another Medicine Row (Manual / Custom)
             </button>
 
@@ -920,10 +920,10 @@
                 <!-- Fast Follow-up Shortcut Buttons -->
                 <div class="flex items-center gap-1.5 mb-2 flex-wrap">
                     <span class="text-[11px] font-bold text-gray-500">Next Follow-up:</span>
-                    <button type="button" wire:click="addFollowUp('7 days')" class="text-[11px] bg-cyan-50 hover:bg-cyan-100 text-cyan-800 border border-cyan-200 px-2 py-0.5 rounded font-semibold">+ 7 Days</button>
-                    <button type="button" wire:click="addFollowUp('15 days')" class="text-[11px] bg-cyan-50 hover:bg-cyan-100 text-cyan-800 border border-cyan-200 px-2 py-0.5 rounded font-semibold">+ 15 Days</button>
-                    <button type="button" wire:click="addFollowUp('1 month')" class="text-[11px] bg-cyan-50 hover:bg-cyan-100 text-cyan-800 border border-cyan-200 px-2 py-0.5 rounded font-semibold">+ 1 Month</button>
-                    <button type="button" wire:click="addFollowUp('3 months')" class="text-[11px] bg-cyan-50 hover:bg-cyan-100 text-cyan-800 border border-cyan-200 px-2 py-0.5 rounded font-semibold">+ 3 Months</button>
+                    <button type="button" wire:click="addFollowUp('7 days')" class="text-[11px] bg-blue-50 hover:bg-blue-100 text-[#1e3fae] border border-blue-200 px-2 py-0.5 rounded font-semibold">+ 7 Days</button>
+                    <button type="button" wire:click="addFollowUp('15 days')" class="text-[11px] bg-blue-50 hover:bg-blue-100 text-[#1e3fae] border border-blue-200 px-2 py-0.5 rounded font-semibold">+ 15 Days</button>
+                    <button type="button" wire:click="addFollowUp('1 month')" class="text-[11px] bg-blue-50 hover:bg-blue-100 text-[#1e3fae] border border-blue-200 px-2 py-0.5 rounded font-semibold">+ 1 Month</button>
+                    <button type="button" wire:click="addFollowUp('3 months')" class="text-[11px] bg-blue-50 hover:bg-blue-100 text-[#1e3fae] border border-blue-200 px-2 py-0.5 rounded font-semibold">+ 3 Months</button>
                 </div>
 
                 <!-- Specialty Advice Chips -->
@@ -1069,34 +1069,34 @@
 
             <div class="space-y-3 text-xs max-h-[60vh] overflow-y-auto pr-1">
                 <div class="p-2.5 bg-slate-50 border rounded-lg">
-                    <div class="font-bold text-cyan-800 uppercase text-[10px] tracking-wider mb-0.5">1. Chief Complaints (সমস্যা)</div>
+                    <div class="font-bold text-[#1e3fae] uppercase text-[10px] tracking-wider mb-0.5">1. Chief Complaints (সমস্যা)</div>
                     <div class="text-gray-800 italic">"Complaint high fever with chills x 3 days and headache"</div>
-                    <div class="text-cyan-700 text-[11px] mt-0.5">বা বাংলায়: "সমস্যা ৩ দিন ধরে তীব্র জ্বর এবং মাথাব্যথা"</div>
+                    <div class="text-[#1e3fae] text-[11px] mt-0.5">বা বাংলায়: "সমস্যা ৩ দিন ধরে তীব্র জ্বর এবং মাথাব্যথা"</div>
                 </div>
 
                 <div class="p-2.5 bg-slate-50 border rounded-lg">
-                    <div class="font-bold text-cyan-800 uppercase text-[10px] tracking-wider mb-0.5">2. On Examination (শারীরিক পরীক্ষা)</div>
+                    <div class="font-bold text-[#1e3fae] uppercase text-[10px] tracking-wider mb-0.5">2. On Examination (শারীরিক পরীক্ষা)</div>
                     <div class="text-gray-800 italic">"Findings BP 140 over 90, pulse 80 regular, chest clear"</div>
                 </div>
 
                 <div class="p-2.5 bg-slate-50 border rounded-lg">
-                    <div class="font-bold text-cyan-800 uppercase text-[10px] tracking-wider mb-0.5">3. Diagnosis (রোগ নির্ণয়)</div>
+                    <div class="font-bold text-[#1e3fae] uppercase text-[10px] tracking-wider mb-0.5">3. Diagnosis (রোগ নির্ণয়)</div>
                     <div class="text-gray-800 italic">"Diagnosis Acute Viral Syndrome" / "রোগ ডায়াবেটিস"</div>
                 </div>
 
                 <div class="p-2.5 bg-slate-50 border rounded-lg">
-                    <div class="font-bold text-cyan-800 uppercase text-[10px] tracking-wider mb-0.5">4. Diagnostic Tests (পরীক্ষা-নিরীক্ষা)</div>
+                    <div class="font-bold text-[#1e3fae] uppercase text-[10px] tracking-wider mb-0.5">4. Diagnostic Tests (পরীক্ষা-নিরীক্ষা)</div>
                     <div class="text-gray-800 italic">"Investigation CBC, Serum Creatinine and Urine RME"</div>
                 </div>
 
-                <div class="p-2.5 bg-cyan-50 border border-cyan-200 rounded-lg">
-                    <div class="font-bold text-cyan-900 uppercase text-[10px] tracking-wider mb-0.5">5. Prescribe Medicine (ঔষধ প্রদান)</div>
+                <div class="p-2.5 bg-blue-50 border border-blue-200 rounded-lg">
+                    <div class="font-bold text-[#1e3fae] uppercase text-[10px] tracking-wider mb-0.5">5. Prescribe Medicine (ঔষধ প্রদান)</div>
                     <div class="text-gray-800 italic">"Medicine Napa Extra 1 plus 0 plus 1 for 5 days after meal"</div>
-                    <div class="text-cyan-700 text-[11px] mt-0.5">→ Automatically parses brand, dosage (1+0+1), duration (5 days), and instructions (After meal).</div>
+                    <div class="text-blue-700 text-[11px] mt-0.5">→ Automatically parses brand, dosage (1+0+1), duration (5 days), and instructions (After meal).</div>
                 </div>
 
                 <div class="p-2.5 bg-slate-50 border rounded-lg">
-                    <div class="font-bold text-cyan-800 uppercase text-[10px] tracking-wider mb-0.5">6. Advice & Fast Actions (পরামর্শ ও প্রিন্ট)</div>
+                    <div class="font-bold text-[#1e3fae] uppercase text-[10px] tracking-wider mb-0.5">6. Advice & Fast Actions (পরামর্শ ও প্রিন্ট)</div>
                     <div class="text-gray-800 italic">"Advice drink 2.5 liters of water daily" / "Save prescription"</div>
                 </div>
             </div>

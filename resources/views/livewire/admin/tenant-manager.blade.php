@@ -1,15 +1,16 @@
 <div class="max-w-7xl mx-auto px-4 py-8">
-    <div class="flex items-center justify-between mb-8">
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
         <div>
             <div class="flex items-center gap-2">
-                <span class="px-2.5 py-0.5 rounded text-xs font-black bg-purple-100 text-purple-800 uppercase tracking-wider">Super Admin Portal</span>
+                <img src="{{ asset('images/bikrify-logo.png') }}" class="w-5 h-5 rounded-md">
+                <span class="px-2.5 py-0.5 rounded text-xs font-black bg-blue-100 text-[#1e3fae] uppercase tracking-wider">Super Admin Governance Portal</span>
             </div>
             <h1 class="text-2xl font-black text-slate-900 mt-1">Tenant Clinics & Doctor Credentialing</h1>
-            <p class="text-sm text-slate-500">Permanently configure verified doctor identities, BMDC registrations, specialties, and institutional descriptions.</p>
+            <p class="text-xs text-slate-500">Permanently configure verified doctor identities, BMDC registrations, specialties, and institutional descriptions.</p>
         </div>
         <button
             wire:click="openCreateModal"
-            class="bg-purple-700 hover:bg-purple-800 text-white font-bold px-4 py-2 rounded-lg text-sm shadow-sm flex items-center gap-1.5 transition"
+            class="bg-[#ff6200] hover:bg-[#ea580c] text-white font-bold px-4 py-2.5 rounded-lg text-xs shadow-sm flex items-center justify-center gap-1.5 transition cursor-pointer"
         >
             <span>+</span> Provision New Doctor Clinic
         </button>
@@ -110,12 +111,13 @@
     @if ($showCreateModal || $showEditModal)
         <div class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-xs p-4 overflow-y-auto">
             <div class="bg-white rounded-2xl shadow-2xl max-w-2xl w-full border border-slate-200 overflow-hidden my-8">
-                <div class="bg-purple-800 px-6 py-4 text-white flex items-center justify-between">
+                <div class="bg-[#1e3fae] px-6 py-4 text-white flex items-center justify-between">
                     <div>
-                        <h3 class="font-bold text-base">
+                        <h3 class="font-bold text-base flex items-center gap-2">
+                            <img src="{{ asset('images/bikrify-logo.png') }}" class="w-5 h-5 rounded-md">
                             {{ $showEditModal ? 'Edit Doctor Profile & Credentials (Super Admin)' : 'Provision New Doctor Clinic' }}
                         </h3>
-                        <p class="text-xs text-purple-200 mt-0.5">Permanent configuration set exclusively by Bikrify Super Admin.</p>
+                        <p class="text-xs text-blue-100 mt-0.5">Permanent configuration set exclusively by Bikrify Super Admin.</p>
                     </div>
                     <button wire:click="{{ $showEditModal ? 'closeEditModal' : 'closeCreateModal' }}" class="text-purple-200 hover:text-white font-bold text-lg">✕</button>
                 </div>
@@ -279,7 +281,7 @@
                         </button>
                         <button
                             type="submit"
-                            class="bg-purple-700 hover:bg-purple-800 text-white font-bold px-5 py-2 text-sm rounded-lg shadow-sm transition"
+                            class="bg-[#ff6200] hover:bg-[#ea580c] text-white font-bold px-5 py-2 text-sm rounded-lg shadow-sm transition cursor-pointer"
                         >
                             {{ $showEditModal ? 'Update Doctor Profile Permanently' : 'Create & Provision Clinic' }}
                         </button>

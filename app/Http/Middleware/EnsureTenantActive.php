@@ -16,7 +16,11 @@ class EnsureTenantActive
     {
         $user = $request->user();
 
-        if ($user && ! $user->isSuperAdmin() && $user->tenant_id) {
+        if ($user && $user->isSuperAdmin()) {
+            return redirect()->route('admin.tenants');
+        }
+
+        if ($user && $user->tenant_id) {
             $tenant = $user->tenant;
             if ($tenant && $tenant->isSuspended()) {
                 Auth::logout();
