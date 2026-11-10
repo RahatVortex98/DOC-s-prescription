@@ -109,7 +109,7 @@
                 @else
                     <div style="margin-bottom: 8px; display: inline-flex; align-items: center; gap: 8px;">
                         <img src="{{ asset('images/bikrify-logo.png') }}" alt="Bikrify" style="height: 32px; width: 32px; border-radius: 6px; vertical-align: middle;">
-                        <span style="font-weight: 900; font-size: 15px; color: #1e3fae; vertical-align: middle;">Bikrify <span style="color: #ff6200;">Health</span></span>
+                        <span style="font-weight: 900; font-size: 15px; color: #1e3fae; vertical-align: middle;">Bikrify<span style="color: #ff6200;">Care</span></span>
                     </div>
                 @endif
                 <div class="doc-name">{{ $prescription->doctor_name }}</div>
@@ -227,7 +227,7 @@
     <table class="footer-table">
         <tr>
             <td style="vertical-align: bottom;">
-                Powered by <strong>Bikrify Digital Health Platform</strong>
+                Powered by <strong>BikrifyCare Clinical Platform</strong>
             </td>
             <td style="text-align: right; vertical-align: bottom;">
                 @if($tenant?->signature_path)

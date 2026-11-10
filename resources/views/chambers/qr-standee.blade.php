@@ -199,7 +199,7 @@
 
         <!-- Branding -->
         <div class="brand-footer">
-            Powered by Bikrify Digital Health Care Platform • Fast Offline-Ready Medical Prescriptions
+            Powered by BikrifyCare Clinical Platform • Fast Offline-Ready Medical Prescriptions
         </div>
     </div>
 </body>

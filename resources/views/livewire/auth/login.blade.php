@@ -5,7 +5,7 @@
             <img src="{{ asset('images/bikrify-logo.png') }}" alt="Bikrify" class="w-12 h-12 rounded-xl shadow-md">
             <div class="text-left">
                 <span class="text-2xl font-black text-[#1e3fae] tracking-tight">Bikrify</span>
-                <span class="text-2xl font-black text-[#ff6200] ml-1">Health</span>
+                <span class="text-2xl font-black text-[#ff6200] ml-1">Care</span>
                 <div class="text-[11px] font-bold text-slate-500 uppercase tracking-widest">Prescription Studio</div>
             </div>
         </div>
@@ -102,7 +102,7 @@
 
             <div class="mt-6 pt-4 border-t border-slate-100 text-center">
                 <p class="text-xs text-slate-500">
-                    Bikrify Digital Health Platform &copy; {{ date('Y') }}. All rights reserved.
+                    BikrifyCare Clinical Platform &copy; {{ date('Y') }}. All rights reserved.
                 </p>
             </div>
         </div>

@@ -5,7 +5,6 @@
     voiceFeedback: '',
     lastVoiceHeard: '',
     recognition: null,
-    showVoiceGuide: false,
 
     initSpeech() {
         if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
@@ -346,15 +345,6 @@
                     🇧🇩 বাংলা
                 </button>
             </div>
-
-            <!-- Voice Commands Help Pill -->
-            <button
-                type="button"
-                @click="showVoiceGuide = true"
-                class="text-[11px] bg-slate-800 hover:bg-slate-700 text-blue-200 px-2.5 py-1 rounded-md border border-slate-700 flex items-center gap-1 transition cursor-pointer"
-            >
-                <span>💡</span> Voice Guide
-            </button>
         </div>
 
         <!-- Live Real-Time Voice Activity / Feedback Status -->
@@ -1047,66 +1037,4 @@
             </div>
         </div>
     @endif
-
-    @unless(auth()->user()?->isAssistant())
-    <!-- Voice Commands Guide Modal -->
-    <div x-show="showVoiceGuide" x-cloak class="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
-        <div class="bg-white rounded-2xl shadow-2xl max-w-xl w-full p-6" @click.away="showVoiceGuide = false">
-            <div class="flex items-center justify-between border-b pb-3 mb-4">
-                <div class="flex items-center gap-2">
-                    <span class="text-2xl">🎙️</span>
-                    <div>
-                        <h3 class="font-bold text-base text-slate-800">Voice Prescribing Assistant Guide</h3>
-                        <p class="text-[11px] text-gray-500">Dictate prescriptions seamlessly in English or Bengali</p>
-                    </div>
-                </div>
-                <button type="button" @click="showVoiceGuide = false" class="text-gray-400 hover:text-gray-600 font-bold text-lg">✕</button>
-            </div>
-
-            <p class="text-xs text-gray-600 mb-4">
-                Click <strong>Voice Activate Studio</strong> at the top bar and speak naturally. The AI speech engine will automatically route what you say to the appropriate clinical sections:
-            </p>
-
-            <div class="space-y-3 text-xs max-h-[60vh] overflow-y-auto pr-1">
-                <div class="p-2.5 bg-slate-50 border rounded-lg">
-                    <div class="font-bold text-[#1e3fae] uppercase text-[10px] tracking-wider mb-0.5">1. Chief Complaints (সমস্যা)</div>
-                    <div class="text-gray-800 italic">"Complaint high fever with chills x 3 days and headache"</div>
-                    <div class="text-[#1e3fae] text-[11px] mt-0.5">বা বাংলায়: "সমস্যা ৩ দিন ধরে তীব্র জ্বর এবং মাথাব্যথা"</div>
-                </div>
-
-                <div class="p-2.5 bg-slate-50 border rounded-lg">
-                    <div class="font-bold text-[#1e3fae] uppercase text-[10px] tracking-wider mb-0.5">2. On Examination (শারীরিক পরীক্ষা)</div>
-                    <div class="text-gray-800 italic">"Findings BP 140 over 90, pulse 80 regular, chest clear"</div>
-                </div>
-
-                <div class="p-2.5 bg-slate-50 border rounded-lg">
-                    <div class="font-bold text-[#1e3fae] uppercase text-[10px] tracking-wider mb-0.5">3. Diagnosis (রোগ নির্ণয়)</div>
-                    <div class="text-gray-800 italic">"Diagnosis Acute Viral Syndrome" / "রোগ ডায়াবেটিস"</div>
-                </div>
-
-                <div class="p-2.5 bg-slate-50 border rounded-lg">
-                    <div class="font-bold text-[#1e3fae] uppercase text-[10px] tracking-wider mb-0.5">4. Diagnostic Tests (পরীক্ষা-নিরীক্ষা)</div>
-                    <div class="text-gray-800 italic">"Investigation CBC, Serum Creatinine and Urine RME"</div>
-                </div>
-
-                <div class="p-2.5 bg-blue-50 border border-blue-200 rounded-lg">
-                    <div class="font-bold text-[#1e3fae] uppercase text-[10px] tracking-wider mb-0.5">5. Prescribe Medicine (ঔষধ প্রদান)</div>
-                    <div class="text-gray-800 italic">"Medicine Napa Extra 1 plus 0 plus 1 for 5 days after meal"</div>
-                    <div class="text-blue-700 text-[11px] mt-0.5">→ Automatically parses brand, dosage (1+0+1), duration (5 days), and instructions (After meal).</div>
-                </div>
-
-                <div class="p-2.5 bg-slate-50 border rounded-lg">
-                    <div class="font-bold text-[#1e3fae] uppercase text-[10px] tracking-wider mb-0.5">6. Advice & Fast Actions (পরামর্শ ও প্রিন্ট)</div>
-                    <div class="text-gray-800 italic">"Advice drink 2.5 liters of water daily" / "Save prescription"</div>
-                </div>
-            </div>
-
-            <div class="mt-5 text-right border-t pt-3">
-                <button type="button" @click="showVoiceGuide = false" class="px-5 py-2 bg-slate-800 hover:bg-slate-900 text-white font-bold text-xs rounded-lg transition">
-                    Got it, Close
-                </button>
-            </div>
-        </div>
-    </div>
-    @endunless
 </div>

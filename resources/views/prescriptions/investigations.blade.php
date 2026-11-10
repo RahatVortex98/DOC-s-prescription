@@ -186,7 +186,7 @@
 
         <!-- Doctor Signature Footer -->
         <div class="footer">
-            <div>Powered by <strong>Bikrify Digital Health Care</strong></div>
+            <div>Powered by <strong>BikrifyCare Clinical Platform</strong></div>
             <div style="text-align:right;">
                 Doctor's Signature: _________________________
             </div>

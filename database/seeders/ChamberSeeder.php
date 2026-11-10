@@ -18,7 +18,7 @@ class ChamberSeeder extends Seeder
         ]);
 
         Chamber::withoutGlobalScope('tenant')->updateOrCreate(
-            ['tenant_id' => $tenant->id, 'name' => 'Bikrify Digital Health Care - Banani'],
+            ['tenant_id' => $tenant->id, 'name' => 'BikrifyCare - Banani'],
             [
                 'hospital_affiliation' => 'Bikrify Specialist Care',
                 'doctor_name' => 'Prof. Dr. Mahbubur Rahman',

@@ -19,7 +19,7 @@
                             <img src="{{ asset('images/bikrify-logo.png') }}" alt="Bikrify" class="w-8 h-8 rounded-lg shadow-xs">
                             <div class="flex items-center">
                                 <span class="font-black text-[#1e3fae] text-lg tracking-tight">Bikrify</span>
-                                <span class="font-black text-[#ff6200] text-lg ml-0.5">Health</span>
+                                <span class="font-black text-[#ff6200] text-lg ml-0.5">Care</span>
                                 <span class="hidden sm:inline-block text-[10px] bg-blue-100 text-[#1e3fae] font-extrabold px-1.5 py-0.5 rounded ml-1.5">Studio</span>
                             </div>
                         </a>

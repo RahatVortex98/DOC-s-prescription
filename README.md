@@ -1,4 +1,4 @@
-# Bikrify Prescription Studio (DOC-s-prescription)
+# BikrifyCare - Prescription Studio (DOC-s-prescription)
 
 [![Laravel](https://img.shields.io/badge/Laravel-13.x-FF2D20?style=for-the-badge&logo=laravel&logoColor=white)](https://laravel.com)
 [![Livewire](https://img.shields.io/badge/Livewire-4.x-FB70A9?style=for-the-badge&logo=livewire&logoColor=white)](https://livewire.laravel.com)
@@ -7,7 +7,7 @@
 [![Tests](https://img.shields.io/badge/PHPUnit-44%20Passing-brightgreen?style=for-the-badge&logo=github-actions&logoColor=white)](#automated-testing)
 [![License](https://img.shields.io/badge/License-MIT-blue?style=for-the-badge)](LICENSE)
 
-**Bikrify Prescription Studio** is a commercial-grade, multi-tenant clinical Prescribing Platform and Patient Queue Management SaaS built specifically for doctors, hospital consultants, polyclinics, and receptionists in Bangladesh and global private practice.
+**BikrifyCare Prescription Studio** is a commercial-grade, multi-tenant clinical Prescribing Platform and Patient Queue Management SaaS built specifically for doctors, hospital consultants, polyclinics, and receptionists in Bangladesh and global private practice.
 
 ---
 
@@ -322,4 +322,4 @@ When onboarding a new doctor or hospital to **Bikrify**:
 
 - **License**: Distributed under the [MIT License](LICENSE).
 - **Security Policy**: For vulnerability reporting and medical data protection standards, see [SECURITY.md](SECURITY.md).
-- Developed with ❤️ by the **Bikrify Health Tech Team**.
+- Developed with ❤️ by the **BikrifyCare Tech Team**.
