@@ -49,6 +49,9 @@
                                     <a href="{{ route('audit.logs') }}" class="px-3 py-1.5 rounded-lg text-xs font-bold @if(request()->routeIs('audit.logs')) bg-blue-50 text-[#1e3fae] border border-blue-200 @else text-slate-600 hover:text-[#1e3fae] hover:bg-slate-50 @endif transition">
                                         Audit Logs
                                     </a>
+                                    <a href="{{ route('whatsapp.settings') }}" class="px-3 py-1.5 rounded-lg text-xs font-bold @if(request()->routeIs('whatsapp.settings')) bg-emerald-50 text-emerald-800 border border-emerald-200 @else text-slate-600 hover:text-emerald-700 hover:bg-slate-50 @endif transition">
+                                        💬 WhatsApp
+                                    </a>
                                 </div>
                             @endif
                         @endauth
@@ -126,6 +129,9 @@
                         </a>
                         <a href="{{ route('audit.logs') }}" class="block px-3 py-2 rounded-lg text-xs font-bold @if(request()->routeIs('audit.logs')) bg-blue-50 text-[#1e3fae] @else text-slate-700 hover:bg-slate-50 @endif">
                             🛡️ Audit Logs
+                        </a>
+                        <a href="{{ route('whatsapp.settings') }}" class="block px-3 py-2 rounded-lg text-xs font-bold @if(request()->routeIs('whatsapp.settings')) bg-emerald-50 text-emerald-800 @else text-slate-700 hover:bg-slate-50 @endif">
+                            💬 WhatsApp Integration
                         </a>
                     @endif
 

@@ -9,6 +9,7 @@ use App\Livewire\Auth\Login;
 use App\Livewire\DoctorDashboard;
 use App\Livewire\PrescriptionBuilder;
 use App\Livewire\PrescriptionList;
+use App\Livewire\WhatsApp\WhatsAppSettings;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
@@ -55,6 +56,8 @@ Route::middleware(['auth', 'tenant.active'])->prefix('app')->group(function () {
     Route::get('/chambers/{chamber}/qr-standee', [ChamberController::class, 'qrStandee'])->name('chamber.qr_standee');
 
     Route::get('/audit-logs', AuditLogViewer::class)->name('audit.logs');
+
+    Route::get('/settings/whatsapp', WhatsAppSettings::class)->name('whatsapp.settings');
 
     Route::get('/prescriptions/{prescription}/print', [PrescriptionPrintController::class, 'show'])
         ->name('prescription.print');
