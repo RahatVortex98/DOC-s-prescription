@@ -68,7 +68,14 @@
                     @forelse($prescriptions as $rx)
                         <tr class="hover:bg-slate-50 transition">
                             <td class="p-3">
-                                <span class="font-bold text-cyan-800">{{ $rx->prescription_no }}</span>
+                                <div class="flex items-center gap-1.5">
+                                    <span class="font-bold text-cyan-800">{{ $rx->prescription_no }}</span>
+                                    @if($rx->isVoided())
+                                        <span class="bg-red-100 text-red-700 font-extrabold px-1.5 py-0.5 rounded text-[10px] uppercase tracking-wider border border-red-200">
+                                            VOID
+                                        </span>
+                                    @endif
+                                </div>
                                 <div class="text-[11px] text-gray-400 mt-0.5">
                                     {{ \Carbon\Carbon::parse($rx->prescription_date)->format('d M, Y') }}
                                 </div>
@@ -98,9 +105,11 @@
                                 </span>
                             </td>
                             <td class="p-3 text-right space-x-1 whitespace-nowrap">
-                                <a href="{{ route('prescription.builder') }}?clone={{ $rx->id }}" class="inline-block bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-300 px-2 py-1 rounded text-xs font-bold transition" title="Clone / Re-use in Studio">
-                                    ↻ Re-use
-                                </a>
+                                @unless($rx->isVoided())
+                                    <a href="{{ route('prescription.builder') }}?clone={{ $rx->id }}" class="inline-block bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-300 px-2 py-1 rounded text-xs font-bold transition" title="Clone / Re-use in Studio">
+                                        ↻ Re-use
+                                    </a>
+                                @endunless
                                 @if($rx->investigations)
                                     <a href="{{ route('prescription.investigations', $rx->id) }}" target="_blank" class="inline-block bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 px-2 py-1 rounded text-xs font-bold transition" title="Print Lab Slip">
                                         🧪 Lab
@@ -112,6 +121,15 @@
                                 <a href="{{ route('prescription.pdf', $rx->id) }}" class="inline-block bg-cyan-600 hover:bg-cyan-700 text-white px-2 py-1 rounded text-xs font-bold transition">
                                     PDF
                                 </a>
+                                @if(! $rx->isVoided() && ! auth()->user()?->isAssistant())
+                                    <button type="button"
+                                            wire:click="voidPrescription({{ $rx->id }})"
+                                            wire:confirm="Are you sure you want to VOID this prescription? This action is permanent and recorded in the audit log."
+                                            class="inline-block bg-red-50 hover:bg-red-100 text-red-700 border border-red-200 px-2 py-1 rounded text-xs font-bold transition cursor-pointer"
+                                            title="Mark as Void">
+                                        ✕ Void
+                                    </button>
+                                @endif
                             </td>
                         </tr>
                     @empty

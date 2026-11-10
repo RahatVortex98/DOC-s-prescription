@@ -9,7 +9,7 @@
     @livewireStyles
 </head>
 <body class="bg-slate-100 text-slate-900 font-sans antialiased min-h-screen">
-    @unless(request()->routeIs('login') || request()->routeIs('appointment.public_book') || request()->routeIs('chamber.qr_standee') || request()->routeIs('prescription.print') || request()->routeIs('prescription.investigations') || request()->routeIs('prescription.pdf'))
+    @unless(request()->routeIs('login') || request()->routeIs('appointment.public_book') || request()->routeIs('chamber.qr_standee') || request()->routeIs('prescription.print') || request()->routeIs('prescription.investigations') || request()->routeIs('prescription.pdf') || request()->routeIs('prescription.public_share'))
         <nav class="bg-white border-b border-slate-200 sticky top-0 z-40">
             <div class="max-w-7xl mx-auto px-4 flex items-center justify-between h-14">
                 <div class="flex items-center gap-6">
@@ -41,6 +41,9 @@
                                 </a>
                                 <a href="{{ route('doctor.dashboard') }}" class="px-3 py-1.5 rounded-md text-xs font-bold @if(request()->routeIs('doctor.dashboard')) bg-cyan-50 text-cyan-800 border border-cyan-200 @else text-slate-600 hover:text-cyan-800 hover:bg-slate-50 @endif">
                                     Practice Analytics
+                                </a>
+                                <a href="{{ route('audit.logs') }}" class="px-3 py-1.5 rounded-md text-xs font-bold @if(request()->routeIs('audit.logs')) bg-cyan-50 text-cyan-800 border border-cyan-200 @else text-slate-600 hover:text-cyan-800 hover:bg-slate-50 @endif">
+                                    Audit Logs
                                 </a>
                             </div>
                         @endif

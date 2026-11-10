@@ -9,6 +9,8 @@ class ImportMedicinesCommand extends Command
 {
     protected $signature = 'medicines:import {file=database/data/medicines.csv}';
 
+    protected $aliases = ['app:import-medicines'];
+
     protected $description = 'Stream & batch import 42,000+ medicines into database';
 
     public function handle(): int
@@ -50,7 +52,11 @@ class ImportMedicinesCommand extends Command
             ];
 
             if (count($batch) >= $batchSize) {
-                DB::table('medicines')->insert($batch);
+                DB::table('medicines')->upsert(
+                    $batch,
+                    ['brand_name', 'strength', 'dosage_form'],
+                    ['generic_name', 'manufacturer', 'updated_at']
+                );
                 $total += count($batch);
                 $batch = [];
                 $this->output->write('.');
@@ -58,7 +64,11 @@ class ImportMedicinesCommand extends Command
         }
 
         if (count($batch) > 0) {
-            DB::table('medicines')->insert($batch);
+            DB::table('medicines')->upsert(
+                $batch,
+                ['brand_name', 'strength', 'dosage_form'],
+                ['generic_name', 'manufacturer', 'updated_at']
+            );
             $total += count($batch);
         }
 

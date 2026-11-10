@@ -3,6 +3,7 @@
 namespace App\Livewire;
 
 use App\Models\Appointment;
+use App\Models\AuditLog;
 use App\Models\Chamber;
 use App\Models\Patient;
 use App\Models\Tenant;
@@ -183,9 +184,11 @@ class AppointmentManager extends Component
 
             $patientId = null;
             if ($phone !== '') {
+                $trimmedName = trim($this->patient_name);
                 $patient = Patient::withoutGlobalScope('tenant')
                     ->where('tenant_id', $tenantId)
                     ->where('phone', $phone)
+                    ->whereRaw('LOWER(TRIM(name)) = ?', [strtolower($trimmedName)])
                     ->first();
 
                 if ($patient) {
@@ -193,7 +196,7 @@ class AppointmentManager extends Component
                 } else {
                     $newPatient = new Patient([
                         'patient_id' => 'PID-'.strtoupper(bin2hex(random_bytes(3))),
-                        'name' => $this->patient_name,
+                        'name' => $trimmedName,
                         'phone' => $phone,
                         'age' => (int) $this->patient_age,
                         'gender' => $this->patient_gender,
@@ -244,6 +247,11 @@ class AppointmentManager extends Component
     public function deleteAppointment(int $appointmentId): void
     {
         $appointment = Appointment::findOrFail($appointmentId);
+        AuditLog::record('appointment.deleted', $appointment, [
+            'serial_no' => $appointment->serial_no,
+            'patient_name' => $appointment->patient_name,
+            'appointment_date' => $appointment->appointment_date?->toDateString(),
+        ]);
         $appointment->delete();
     }
 

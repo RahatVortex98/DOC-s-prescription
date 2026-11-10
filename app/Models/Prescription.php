@@ -7,16 +7,19 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Str;
 
 class Prescription extends Model
 {
-    use BelongsToTenant, HasFactory;
+    use BelongsToTenant, HasFactory, SoftDeletes;
 
     /**
      * @var list<string>
      */
     protected $fillable = [
         'tenant_id',
+        'public_id',
         'prescription_no',
         'patient_id',
         'chamber_id',
@@ -29,6 +32,9 @@ class Prescription extends Model
         'chamber_phone',
         'chamber_visiting_hours',
         'prescription_date',
+        'status',
+        'voided_at',
+        'void_reason',
         'chief_complaints',
         'clinical_findings',
         'diagnosis',
@@ -39,6 +45,9 @@ class Prescription extends Model
     protected static function booted(): void
     {
         static::creating(function (Prescription $prescription) {
+            $prescription->public_id ??= (string) Str::ulid();
+            $prescription->status ??= 'active';
+
             if (empty($prescription->chamber_name) && $prescription->chamber_id) {
                 $chamber = Chamber::withoutGlobalScope('tenant')->find($prescription->chamber_id);
                 if ($chamber) {
@@ -66,7 +75,22 @@ class Prescription extends Model
     {
         return [
             'prescription_date' => 'date',
+            'voided_at' => 'datetime',
         ];
+    }
+
+    public function isVoided(): bool
+    {
+        return $this->status === 'void';
+    }
+
+    public function void(string $reason): void
+    {
+        $this->update([
+            'status' => 'void',
+            'voided_at' => now(),
+            'void_reason' => $reason,
+        ]);
     }
 
     /**

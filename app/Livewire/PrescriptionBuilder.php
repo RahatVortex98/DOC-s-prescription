@@ -3,6 +3,7 @@
 namespace App\Livewire;
 
 use App\Models\Appointment;
+use App\Models\AuditLog;
 use App\Models\Chamber;
 use App\Models\DrugKit;
 use App\Models\Medicine;
@@ -11,6 +12,9 @@ use App\Models\Prescription;
 use App\Models\PrescriptionTemplate;
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Database\UniqueConstraintViolationException;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 use Livewire\Attributes\Locked;
 use Livewire\Component;
 
@@ -43,6 +47,8 @@ class PrescriptionBuilder extends Component
     public string $patient_gender = 'Male';
 
     public string $patient_phone = '';
+
+    public string $patient_allergies = '';
 
     // Active Appointment Tracking
     #[Locked]
@@ -181,7 +187,7 @@ class PrescriptionBuilder extends Component
         $cloneId = $prescriptionId ?: request()->query('clone');
         if ($cloneId) {
             $cloneRx = Prescription::with(['patient', 'items', 'chamber'])->find($cloneId);
-            if ($cloneRx) {
+            if ($cloneRx && ! $cloneRx->isVoided()) {
                 if ($cloneRx->patient) {
                     $this->selectPatient($cloneRx->patient->id);
                 }
@@ -576,6 +582,7 @@ class PrescriptionBuilder extends Component
         $this->patient_age = (string) $patient->age;
         $this->patient_gender = $patient->gender;
         $this->patient_phone = $patient->phone ?? '';
+        $this->patient_allergies = $patient->allergies ?? '';
         $this->is_existing_patient = true;
 
         $this->patientHistory = $patient->prescriptions
@@ -596,6 +603,7 @@ class PrescriptionBuilder extends Component
         $this->patient_age = '';
         $this->patient_gender = 'Male';
         $this->patient_phone = '';
+        $this->patient_allergies = '';
         $this->patientHistory = [];
         $this->patient_search = '';
         $this->patientSearchResults = [];
@@ -604,7 +612,7 @@ class PrescriptionBuilder extends Component
     public function repeatPreviousPrescription(int $prescriptionId): void
     {
         $prescription = Prescription::with('items')->findOrFail($prescriptionId);
-        if ($prescription->items->isEmpty()) {
+        if ($prescription->isVoided() || $prescription->items->isEmpty()) {
             return;
         }
 
@@ -776,68 +784,109 @@ class PrescriptionBuilder extends Component
             'items.*.name' => 'required|string',
         ]);
 
+        $trimmedName = trim($this->patient_name);
+        $phone = trim((string) $this->patient_phone);
+
         if ($this->selected_patient_id) {
             $patient = Patient::findOrFail($this->selected_patient_id);
             $patient->update([
-                'name' => $this->patient_name,
+                'name' => $trimmedName,
                 'age' => (int) $this->patient_age,
                 'gender' => $this->patient_gender,
-                'phone' => $this->patient_phone ?: $patient->phone,
+                'phone' => $phone ?: $patient->phone,
+                'allergies' => $this->patient_allergies ?: $patient->allergies,
             ]);
         } else {
-            $phone = trim($this->patient_phone);
             if ($phone !== '') {
-                $patient = Patient::firstOrCreate(
-                    ['phone' => $phone],
-                    [
+                $patient = Patient::where('phone', $phone)
+                    ->whereRaw('LOWER(TRIM(name)) = ?', [strtolower($trimmedName)])
+                    ->first();
+
+                if (! $patient) {
+                    $patient = Patient::create([
                         'patient_id' => 'PID-'.strtoupper(bin2hex(random_bytes(3))),
-                        'name' => $this->patient_name,
+                        'name' => $trimmedName,
                         'age' => (int) $this->patient_age,
                         'gender' => $this->patient_gender,
-                    ]
-                );
+                        'phone' => $phone,
+                        'allergies' => $this->patient_allergies ?: null,
+                    ]);
+                } else {
+                    $patient->update([
+                        'age' => (int) $this->patient_age,
+                        'gender' => $this->patient_gender,
+                        'allergies' => $this->patient_allergies ?: $patient->allergies,
+                    ]);
+                }
             } else {
                 $patient = Patient::create([
                     'patient_id' => 'PID-'.strtoupper(bin2hex(random_bytes(3))),
-                    'name' => $this->patient_name,
+                    'name' => $trimmedName,
                     'age' => (int) $this->patient_age,
                     'gender' => $this->patient_gender,
                     'phone' => null,
+                    'allergies' => $this->patient_allergies ?: null,
                 ]);
             }
         }
 
-        $prescription = Prescription::create([
-            'prescription_no' => 'RX-'.date('Ymd').'-'.rand(100, 999),
-            'patient_id' => $patient->id,
-            'chamber_id' => $this->selected_chamber_id,
-            'doctor_name' => $this->doctor_name,
-            'doctor_qualification' => $this->doctor_qualification,
-            'doctor_designation' => $this->doctor_designation,
-            'doctor_bmdc_no' => $this->bmdc_no ?: null,
-            'chamber_name' => $this->chamber_name,
-            'chamber_address' => $this->chamber_address,
-            'chamber_phone' => $this->chamber_phone,
-            'chamber_visiting_hours' => $this->chamber_visiting_hours,
-            'prescription_date' => now()->toDateString(),
-            'chief_complaints' => $this->chief_complaints,
-            'clinical_findings' => $this->clinical_findings,
-            'diagnosis' => $this->diagnosis,
-            'investigations' => $this->investigations,
-            'advice' => $this->advice,
-        ]);
+        // Collision-safe RX number with retry
+        $prescription = null;
+        $attempts = 0;
+        while (! $prescription && $attempts < 10) {
+            $attempts++;
+            try {
+                $candidateRxNo = 'RX-'.now()->format('ymd').'-'.strtoupper(Str::random(5));
+                $prescription = DB::transaction(function () use ($candidateRxNo, $patient) {
+                    $rx = Prescription::create([
+                        'prescription_no' => $candidateRxNo,
+                        'patient_id' => $patient->id,
+                        'chamber_id' => $this->selected_chamber_id,
+                        'doctor_name' => $this->doctor_name,
+                        'doctor_qualification' => $this->doctor_qualification,
+                        'doctor_designation' => $this->doctor_designation,
+                        'doctor_bmdc_no' => $this->bmdc_no ?: null,
+                        'chamber_name' => $this->chamber_name,
+                        'chamber_address' => $this->chamber_address,
+                        'chamber_phone' => $this->chamber_phone,
+                        'chamber_visiting_hours' => $this->chamber_visiting_hours,
+                        'prescription_date' => now()->toDateString(),
+                        'chief_complaints' => $this->chief_complaints,
+                        'clinical_findings' => $this->clinical_findings,
+                        'diagnosis' => $this->diagnosis,
+                        'investigations' => $this->investigations,
+                        'advice' => $this->advice,
+                    ]);
 
-        foreach ($this->items as $item) {
-            $prescription->items()->create([
-                'type' => $item['type'] ?? 'Tab.',
-                'medicine_name' => $item['name'],
-                'generic_name' => $item['generic'] ?? null,
-                'strength' => $item['strength'] ?? null,
-                'dosage' => $item['dosage'] ?? '1+0+1',
-                'duration' => $item['duration'] ?? '7 days',
-                'instructions' => $item['instruction'] ?? null,
-            ]);
+                    foreach ($this->items as $item) {
+                        if (! empty($item['name'])) {
+                            $rx->items()->create([
+                                'type' => $item['type'] ?? 'Tab.',
+                                'medicine_name' => $item['name'],
+                                'generic_name' => $item['generic'] ?? null,
+                                'strength' => $item['strength'] ?? null,
+                                'dosage' => $item['dosage'] ?? '1+0+1',
+                                'duration' => $item['duration'] ?? '7 days',
+                                'instructions' => $item['instruction'] ?? null,
+                            ]);
+                        }
+                    }
+
+                    return $rx;
+                });
+            } catch (UniqueConstraintViolationException $e) {
+                $prescription = null;
+            }
         }
+
+        if (! $prescription) {
+            throw new \RuntimeException('Failed to generate unique prescription serial number.');
+        }
+
+        AuditLog::record('prescription.created', $prescription, [
+            'rx_no' => $prescription->prescription_no,
+            'patient' => $patient->name,
+        ]);
 
         if ($this->current_appointment_id) {
             $appointment = Appointment::findOrFail($this->current_appointment_id);

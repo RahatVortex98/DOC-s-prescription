@@ -6,10 +6,11 @@ use App\Models\Concerns\BelongsToTenant;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Patient extends Model
 {
-    use BelongsToTenant, HasFactory;
+    use BelongsToTenant, HasFactory, SoftDeletes;
 
     /**
      * @var list<string>
@@ -21,6 +22,7 @@ class Patient extends Model
         'phone',
         'age',
         'gender',
+        'allergies',
     ];
 
     /**

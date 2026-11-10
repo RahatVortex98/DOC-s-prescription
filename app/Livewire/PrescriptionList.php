@@ -2,6 +2,7 @@
 
 namespace App\Livewire;
 
+use App\Models\AuditLog;
 use App\Models\Chamber;
 use App\Models\Prescription;
 use Illuminate\Contracts\View\View;
@@ -39,6 +40,26 @@ class PrescriptionList extends Component
         $this->chamber_filter = null;
         $this->date_filter = '';
         $this->resetPage();
+    }
+
+    public function voidPrescription(int $id, string $reason = 'Voided by doctor'): void
+    {
+        $prescription = Prescription::findOrFail($id);
+        $prescription->void($reason);
+
+        AuditLog::record('prescription.voided', $prescription, [
+            'rx_no' => $prescription->prescription_no,
+            'reason' => $reason,
+        ]);
+    }
+
+    public function deletePrescription(int $id): void
+    {
+        $prescription = Prescription::findOrFail($id);
+        AuditLog::record('prescription.deleted', $prescription, [
+            'rx_no' => $prescription->prescription_no,
+        ]);
+        $prescription->delete();
     }
 
     public function render(): View

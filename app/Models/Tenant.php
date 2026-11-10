@@ -26,6 +26,8 @@ class Tenant extends Model
         'build',
         'storage',
         'book',
+        'rx',
+        'audit-logs',
     ];
 
     /**

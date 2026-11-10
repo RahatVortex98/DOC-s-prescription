@@ -4,6 +4,7 @@ use App\Http\Controllers\ChamberController;
 use App\Http\Controllers\PrescriptionPrintController;
 use App\Livewire\Admin\TenantManager;
 use App\Livewire\AppointmentManager;
+use App\Livewire\AuditLogViewer;
 use App\Livewire\Auth\Login;
 use App\Livewire\DoctorDashboard;
 use App\Livewire\PrescriptionBuilder;
@@ -45,6 +46,8 @@ Route::middleware(['auth', 'tenant.active'])->prefix('app')->group(function () {
 
     Route::get('/chambers/{chamber}/qr-standee', [ChamberController::class, 'qrStandee'])->name('chamber.qr_standee');
 
+    Route::get('/audit-logs', AuditLogViewer::class)->name('audit.logs');
+
     Route::get('/prescriptions/{prescription}/print', [PrescriptionPrintController::class, 'show'])
         ->name('prescription.print');
 
@@ -55,8 +58,13 @@ Route::middleware(['auth', 'tenant.active'])->prefix('app')->group(function () {
         ->name('prescription.investigations');
 });
 
+// Signed Expiring Public Prescription Share Route (valid 7 days, ULID based)
+Route::get('/rx/{public_id}', [PrescriptionPrintController::class, 'publicShare'])
+    ->name('prescription.public_share')
+    ->middleware('signed');
+
 // Public Tenant Patient Booking Route (must be registered last)
 Route::get('/{tenant:slug}', AppointmentManager::class)
-    ->where('tenant', '^(?!app$|login$|logout$|livewire$|admin$|api$|up$|build$|storage$|book$)[a-z0-9._-]+$')
+    ->where('tenant', '^(?!app$|login$|logout$|livewire$|admin$|api$|up$|build$|storage$|book$|rx$|audit-logs$)[a-z0-9._-]+$')
     ->middleware('throttle:30,1')
     ->name('appointment.public_book');

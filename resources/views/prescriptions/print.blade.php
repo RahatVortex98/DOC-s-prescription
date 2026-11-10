@@ -1,5 +1,6 @@
 @php
     $tenant = $prescription->tenant;
+    $patient = $prescription->patient;
     $brandColor = $tenant?->brand_color ?: '#0891b2';
     $bmdcNo = $prescription->doctor_bmdc_no ?: $tenant?->bmdc_no;
 @endphp
@@ -42,7 +43,7 @@
 <body>
     <div class="no-print" style="background:{{ $brandColor }}; padding:12px 20px; display:flex; flex-wrap:wrap; justify-content:space-between; align-items:center; gap:10px; margin-bottom:20px; color:#fff;">
         <div style="font-weight:bold; font-size:13px;">
-            Prescription #{{ $prescription->prescription_no }} &nbsp;|&nbsp; Patient: {{ $prescription->patient->name }}
+            Prescription #{{ $prescription->prescription_no }} &nbsp;|&nbsp; Patient: {{ $patient?->name ?? 'Patient' }}
         </div>
         <div style="display:flex; align-items:center; flex-wrap:wrap; gap:8px;">
             <!-- Letterhead Pad Mode Toggle -->
@@ -61,11 +62,14 @@
 
             <!-- WhatsApp Direct Share -->
             @php
-                $patientPhone = preg_replace('/[^0-9]/', '', (string)$prescription->patient->phone);
+                $patientPhone = preg_replace('/[^0-9]/', '', (string)($patient?->phone ?? ''));
                 if (str_starts_with($patientPhone, '01')) {
                     $patientPhone = '88' . $patientPhone;
                 }
-                $waText = urlencode("Hello " . $prescription->patient->name . ",\nYour digital prescription Rx #" . $prescription->prescription_no . " from " . $prescription->doctor_name . " at " . $prescription->chamber_name . " is ready.\n\nView or download: " . route('prescription.print', $prescription->id));
+                $shareUrl = $prescription->public_id 
+                    ? \Illuminate\Support\Facades\URL::temporarySignedRoute('prescription.public_share', now()->addDays(7), ['public_id' => $prescription->public_id])
+                    : route('prescription.print', $prescription->id);
+                $waText = urlencode("Hello " . ($patient?->name ?? 'Patient') . ",\nYour digital prescription Rx #" . $prescription->prescription_no . " from " . $prescription->doctor_name . " at " . $prescription->chamber_name . " is ready.\n\nView or download: " . $shareUrl);
             @endphp
             @if($patientPhone)
                 <a href="https://wa.me/{{ $patientPhone }}?text={{ $waText }}" target="_blank" style="padding:6px 12px; background:#22c55e; color:#fff; font-weight:bold; font-size:11px; text-decoration:none; border-radius:4px; display:inline-flex; align-items:center; gap:4px;">
@@ -81,6 +85,15 @@
             <a href="{{ route('prescription.builder') }}" style="padding:6px 14px; background:rgba(0,0,0,0.4); color:#fff; font-weight:bold; font-size:11px; text-decoration:none; border-radius:4px;">Back to Studio</a>
         </div>
     </div>
+
+    @if($prescription->isVoided())
+        <div style="position: fixed; top: 35%; left: 8%; width: 84%; text-align: center; font-size: 110px; font-weight: 900; color: rgba(220, 38, 38, 0.20); transform: rotate(-30deg); text-transform: uppercase; letter-spacing: 16px; border: 8px solid rgba(220, 38, 38, 0.20); padding: 20px; border-radius: 12px; pointer-events: none; z-index: 9999;">
+            VOID
+            <div style="font-size: 14px; letter-spacing: 2px; margin-top: 10px; color: rgba(220, 38, 38, 0.45);">
+                VOIDED ON {{ $prescription->voided_at?->format('d M, Y h:i A') }} @if($prescription->void_reason) - REASON: {{ $prescription->void_reason }} @endif
+            </div>
+        </div>
+    @endif
 
     <!-- Letterhead Spacer for physical pre-printed hospital pads -->
     <div id="spacer" class="letterhead-spacer" style="display:none; height:50mm;"></div>
@@ -136,10 +149,20 @@
     <div class="patient-strip">
         <table>
             <tr>
-                <td class="patient-cell" style="width: 32%;"><strong>Patient:</strong> {{ $prescription->patient->name }}</td>
-                <td class="patient-cell" style="width: 18%;"><strong>Age:</strong> {{ $prescription->patient->age }} Y</td>
-                <td class="patient-cell" style="width: 20%;"><strong>Gender:</strong> {{ $prescription->patient->gender }}</td>
-                <td class="patient-cell" style="width: 30%; text-align: right;"><strong>Patient ID:</strong> {{ $prescription->patient->patient_id }}</td>
+                <td class="patient-cell" style="width: 32%;"><strong>Patient:</strong> {{ $patient?->name ?? 'Patient' }}</td>
+                <td class="patient-cell" style="width: 18%;"><strong>Age:</strong> {{ $patient?->age ?? '-' }} Y</td>
+                <td class="patient-cell" style="width: 20%;"><strong>Gender:</strong> {{ $patient?->gender ?? '-' }}</td>
+                <td class="patient-cell" style="width: 30%; text-align: right;"><strong>Patient ID:</strong> {{ $patient?->patient_id ?? '-' }}</td>
+            </tr>
+            <tr>
+                <td colspan="4" style="padding-top: 5px; font-size: 11px; border-top: 1px dashed #cbd5e1; margin-top: 4px;">
+                    <strong style="color: #dc2626;">Drug Allergies:</strong>
+                    @if($patient?->allergies)
+                        <span style="color: #dc2626; font-weight: bold; background: #fee2e2; padding: 1px 6px; border-radius: 3px;">{{ $patient->allergies }}</span>
+                    @else
+                        <span style="color: #059669; font-weight: 500;">NKDA (No Known Drug Allergies)</span>
+                    @endif
+                </td>
             </tr>
         </table>
     </div>

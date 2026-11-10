@@ -449,7 +449,7 @@
         </div>
 
         <!-- Patient Detail Fields -->
-        <div class="grid grid-cols-1 md:grid-cols-4 gap-3">
+        <div class="grid grid-cols-1 md:grid-cols-5 gap-3">
             <div>
                 <label class="block text-xs font-semibold text-gray-600 uppercase">Patient Name *</label>
                 <input type="text" wire:model="patient_name" class="mt-1 w-full border rounded-md p-1.5 text-xs bg-white" placeholder="e.g. Rahim Ahmed">
@@ -471,6 +471,12 @@
             <div>
                 <label class="block text-xs font-semibold text-gray-600 uppercase">Phone Number</label>
                 <input type="text" wire:model="patient_phone" class="mt-1 w-full border rounded-md p-1.5 text-xs bg-white" placeholder="017xxxxxxxx">
+            </div>
+            <div class="bg-red-50/80 p-1.5 rounded-lg border border-red-200">
+                <label class="block text-xs font-bold text-red-600 uppercase flex items-center gap-1">
+                    <span>⚠️</span> Drug Allergies
+                </label>
+                <input type="text" wire:model="patient_allergies" class="mt-1 w-full border border-red-300 rounded-md p-1.5 text-xs bg-white text-red-700 font-semibold placeholder-red-300 focus:ring-red-500 focus:border-red-500" placeholder="e.g. Penicillin, NSAIDs (NKDA)">
             </div>
         </div>
     </div>
