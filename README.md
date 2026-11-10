@@ -13,34 +13,34 @@
 
 ## 🌟 Executive Feature Highlights
 
-### 1. 🏢 Multi-Tenant SaaS Architecture & Doctor Isolation
-One application, one shared database, with complete isolation across independent doctor clinics:
-- **`tenant_id` Scoping**: All chambers, patients, prescriptions, and appointments are strictly scoped by `tenant_id`.
-- **Global Tenant Scope (`BelongsToTenant`)**: Automatically isolates every Eloquent query to the authenticated doctor's clinic. Unauthorized cross-tenant queries resolve to `1 = 0` (zero rows) and trigger `404 Not Found`.
-- **Three-Tier Role System**:
-  - `super_admin`: Provisions new clinics, toggles trial/active/suspended states, zero access to private medical records.
-  - `doctor`: Complete clinical prescribing workspace, past patient history, diagnostics, and print/PDF streaming.
+### 1. 🏢 Multi-Tenant SaaS Architecture & Isolation
+One application, one shared database, with strict cryptographic and query-level isolation across independent doctor practices:
+- **`tenant_id` Scoping**: All chambers, patients, prescriptions, appointments, templates, and drug kits are strictly scoped by `tenant_id`.
+- **Global Tenant Scope (`BelongsToTenant`)**: Automatically scopes every Eloquent query to the authenticated doctor's clinic. Unauthorized cross-tenant queries resolve to `1 = 0` (zero rows) and trigger `404 Not Found`.
+- **Three-Tier Role Hierarchy**:
+  - `super_admin`: Provisions new doctor tenants, customizes doctor verified identity, toggles trial/active/suspended states, zero access to private patient medical records.
+  - `doctor`: Complete clinical prescribing workspace, past patient history, diagnostics, voiding, and print/PDF streaming.
   - `assistant`: Front-desk patient intake and queue token management. Clinical findings and diagnoses are automatically masked/hidden from assistant view.
 - **Tenant Status Enforcement**: Instantly blocks suspended clinic accounts at the middleware level, invalidating active sessions.
 
 ---
 
-### 2. 🏥 Multi-Hospital Chamber Seating & Profile Customization
-Doctors often practice across multiple private hospitals and chambers throughout the week:
-- **1-Click Hospital Switcher**: Instantly toggle between locations (e.g. *Square Hospital*, *Popular Diagnostic Center*, *Bikrify Banani Chamber*).
-- **Comprehensive Profile Setup**:
-  - Doctor Name, Medical Qualifications (`MBBS, FCPS, MD, BCS (Health)`), and BMDC Reg. No.
-  - Institutional Designation & Department (e.g. *Professor & Chief Consultant, Department of Nephrology*)
-  - Hospital Affiliation, Room/Chamber Number, and Floor
-  - Visiting Hours (e.g. *5:00 PM - 9:00 PM, Sat-Wed*)
-  - Serial Hotline Number, Personal Phone, and a **Direct WhatsApp Hotline** (`https://wa.me/...`)
-- **Onboarding Modal (`⚙️ Setup`)**: Bikrify onboarding specialists or clinic staff can configure new chamber profiles in seconds.
+### 2. 🏛️ Super-Admin Doctor Credential Governance & Zero-Setup Friction
+Doctors should never be burdened with administrative setup or database configuration:
+- **Permanent Super-Admin Governance (`/admin/tenants`)**:
+  - Doctor Verified Name, Medical Qualifications (`MBBS, FCPS, MD, BCS (Health)`), and BMDC Reg. No.
+  - Institutional Designation & Department (e.g. *Associate Professor & Consultant, Nephrology*)
+  - Hospital Affiliation, Chamber Room Number, Floor, Address, Visiting Hours, Serial Hotline, and WhatsApp Number.
+  - Only Super Admin can modify verified credentials, preventing credential tampering.
+- **Zero-Setup Doctor Experience**:
+  - Unnecessary setup modals, "+ Hospital", and configuration hurdles have been removed from the doctor interface.
+  - When the doctor logs in, their profile, hospital chambers, and default templates are already pre-loaded and ready for instant prescribing.
 
 ---
 
 ### 3. 🎯 Specialty-Driven Dynamic Clinical Workspaces
-When a doctor selects their active specialty, the clinical workspace tailors Chief Complaints, Examination (O/E), Diagnoses, Laboratory Investigations, and Advice chips:
-- **Nephrology / CKD Specialist**: Full clinical protocols for Chronic Kidney Disease (Stage 1–5, ESRD), Hypertensive Nephrosclerosis, Diabetic Nephropathy, Glomerulonephritis, S. Creatinine, eGFR, Spot ACR, KUB USG, low-protein diets, and fluid limits.
+When a doctor works in their practice, the clinical workspace tailors Chief Complaints, Examination (O/E), Diagnoses, Laboratory Investigations, and Advice chips to their domain:
+- **Nephrology / CKD Specialist**: Chronic Kidney Disease (Stage 1–5, ESRD), Hypertensive Nephrosclerosis, Diabetic Nephropathy, Glomerulonephritis, S. Creatinine, eGFR, Spot ACR, KUB USG, low-protein diets, and fluid limits.
 - **Cardiology**: IHD, Angina, CCF, NSTEMI, Atrial Fibrillation, ECG, Echocardiography, Troponin-I, Lipid profiles, and cardiac advice.
 - **General Medicine / Internal Medicine**: Acute viral syndromes, Typhoid/Enteric fever, UTI, Dengue NS1 workups, pneumonia, and fever management.
 - **Gastroenterology**: GERD, PUD, IBS, Endoscopy, H. Pylori, USG of whole abdomen, and dietary acid reduction protocols.
@@ -49,7 +49,6 @@ When a doctor selects their active specialty, the clinical workspace tailors Chi
 ---
 
 ### 4. ⚡ Less-Input Automation (Near-Zero Doctor Typing)
-Doctors should spend consultation time speaking with patients, not typing on keyboards:
 - **1-Click Full Clinical Bundles**: Clicking e.g. **"⚡ 1-Click CKD Stage 4 Full Profile"** instantly auto-fills Complaints, Examination, Diagnosis, Investigations, and Special Advice in **literally 1 click**.
 - **1-Click Specialty Medication Kits**:
   - **💊 CKD Core Drug Kit (4 Meds)**: Adds `Ketosteril` (1+1+1 with meal), `Sodibicarb 500mg` (1+0+1 after meal), `Febux 40mg` (0+0+1 after meal), and `Calcichew D` (0+0+1 after meal).
@@ -66,14 +65,31 @@ Doctors should spend consultation time speaking with patients, not typing on key
 
 ---
 
-### 5. 🎙️ Browser-Native Voice Dictation (Speech-to-Text)
-- **Zero Paid API Cost**: Uses browser-native Web Speech API (`SpeechRecognition`) in Chrome, Edge, and Safari.
-- **Bilingual Dictation**: Toggle between **English (Medical Terminology)** and **বাংলা (Bengali - `bn-BD`)**.
-- **Dedicated Voice Mics**: Available on Chief Complaints, Examination (O/E), Diagnosis, Investigations, and Special Advice. Clicking pulses red (`🎙️ Listening...`) and transcribes speech into the active field.
+### 5. 🎙️ Continuous Voice Activate Studio & Bilingual Command AI
+- **Continuous Voice Activation**: Doctors can toggle the **`🎙️ Voice Activate Studio`** banner on top of the prescription studio. Features live audio waveform visualization and instant speech parsing.
+- **Bilingual Speech Engine**: Supports **English (Medical Terminology - `en-US`)** and **বাংলা (Bengali - `bn-BD`)** without paid third-party API costs.
+- **Smart Natural Voice Commands**:
+  - *"Complaint fever and cough"* / *"সমস্যা ৩ দিন ধরে জ্বর"* -> Auto-populates Chief Complaints.
+  - *"Findings BP 140/90, Pulse 76"* / *"BP ১৪০ বাই ৯০"* -> Auto-populates Examination (O/E).
+  - *"Diagnosis Acute Bronchitis"* / *"রোগ টাইফয়েড"* -> Auto-populates Diagnosis.
+  - *"Investigation CBC, Chest X-ray, S. Creatinine"* / *"পরীক্ষা সিবিসি"* -> Auto-populates Investigations.
+  - *"Medicine Napa Extra 1+0+1 5 days After meal"* -> Parses brand, form, dosage, duration, and instructions into a new medicine row.
+  - *"Advice Drink plenty of water and avoid cold food"* / *"পরামর্শ বিশ্রাম নিন"* -> Auto-populates Doctor's Advice.
+  - *"Save"* / *"Print"* / *"প্রিন্ট করো"* -> Automatically validates, saves, and opens the A4 print dialog.
+- **Interactive Voice Cheat Sheet**: Modal guide (`? Voice Help`) displaying command syntax in English and Bengali.
 
 ---
 
-### 6. 👥 Patient Queue & "No-Receptionist" Self-Booking Ecosystem
+### 6. 💊 Multi-Select Dropdowns & Fast Prescribing Controls
+All medication inputs use multiple pre-configured dropdowns for rapid input:
+- **Duration Dropdown (12 Options)**: `3 days`, `5 days`, `7 days`, `10 days`, `14 days`, `21 days`, `1 month`, `1.5 months`, `2 months`, `3 months`, `6 months`, `Continue (চলবে)`.
+- **When to Take / Instructions Dropdown (12 Options)**: `After meal (খাবার পরে)`, `Before meal (খাবার আগে)`, `With meal (খাবারের সাথে)`, `Empty stomach (খালি পেটে)`, `At bedtime (ঘুমানোর আগে)`, `Before breakfast`, `After breakfast`, `30 min before meal`, `In the morning`, `At night`, `As needed (PRN)`, `As directed`.
+- **Dosage Dropdown**: `1+0+1`, `1+1+1`, `1+0+0`, `0+1+0`, `0+0+1`, `1+1+1+1`, `1/2+0+1/2`, `1+0+0+1`, `2 Puffs`, `1 spoon`, `As needed`.
+- **Form / Type Dropdown**: `Tab.`, `Cap.`, `Inj.`, `Syr.`, `Drop`, `Oint.`, `Inhaler`, `Supp.`, `Sachet`.
+
+---
+
+### 7. 👥 Patient Queue & "No-Receptionist" Self-Booking Ecosystem
 
 #### Case A: Doctor HAS a Receptionist (`/app/appointments`)
 - **Receptionist Queue Desk**: Receptionists enter Patient Name, Age, Gender, Phone, and preferred Time Slot.
@@ -83,54 +99,22 @@ Doctors should spend consultation time speaking with patients, not typing on key
 
 #### Case B: Doctor HAS NO Receptionist (Solo Practice Solution)
 - **Public Patient Self-Booking Portal (`/{tenant:slug}`)**:
-  - Example: `http://localhost:8000/dr-mahbubur`
+  - Example: `https://prescriptions.bikrify.com/dr-mahbubur`
   - Mobile-first, privacy-protected portal where patients book from their phone.
   - Required consent checkbox (*"I agree to the processing of my personal data"*).
   - Validation rejecting past dates (`after_or_equal:today`).
   - Strict rate limiting: 30 requests/min and maximum 5 bookings per 60 seconds per IP.
   - Instantly generates an electronic **Serial Token Card** with live waiting counter.
 - **Printable Chamber Door QR Standee Poster (`/app/chambers/{chamber}/qr-standee`)**:
-  - Professional A4 standee poster featuring the Doctor's credentials, hospital name, room number, visiting hours, and a **large scannable QR Code** linking directly to the tenant's booking portal.
+  - Professional A4 standee poster featuring Doctor's credentials, hospital name, room number, visiting hours, and a **large scannable QR Code** linking directly to the tenant's booking portal.
   - Bilingual instructions: *"Scan with Phone Camera to Get Serial Token"* / *"আপনার মোবাইল ক্যামেরা দিয়ে স্ক্যান করে সিরিয়াল টোকেন নিন"*.
   - Ready to print, laminate, and place outside the chamber door.
 
 ---
 
-### 7. 🔍 Old Patient Lookup & Past Prescription History
-- **Live Search**: Search by Phone Number (`017...`), Patient Name, or Patient ID (`PID-XXXX`).
-- **History Drawer**: When an existing patient is loaded, click **"📋 Past Visits"** to view previous consultation dates, diagnoses, complaints, and prescribed medicines.
-- **1-Click "Repeat Previous Rx"**: Copy all medicines and dosages from their previous visit into the builder with one click—ideal for chronic patients (CKD, hypertension, diabetes) coming for refills.
-
----
-
-### 8. 💊 High-Performance Medicine Database & Fast Dropdowns
-- **Comprehensive Bangladesh DGDA Dataset**: Pre-seeded with complete brand variant families:
-  - **Napa**: `Napa 500mg`, `Napa Extra 500+65mg`, `Napa Extend 665mg`, `Napa One 1000mg`, `Napa Rapid`, `Napa Suspension`, `Napa Paediatric Drop`, `Napa Suppository`, `Napa IV Infusion`.
-  - **Ace**: `Ace 500mg`, `Ace Plus`, `Ace Power 1000mg`, `Ace Suspension`.
-  - **CKD / Nephrology**: `Ketosteril`, `Ulsicral`, `Eprex / Epotin 4000 & 10000 IU`, `Sodibicarb`, `Febux`, `Rocaltrol`, `Torsid`, `Lasix`, `Renvela`, `Calcichew D`, `Amlopin`, `Bizoran`, `Angilock`, `Concor`, `Iron Sucrose`.
-- **Tokenized Search**: Typing `napa extra`, `napa`, or `paracetamol` matches all corresponding variants with prefix prioritization.
-- **100% Manual Flexibility**: Doctors can also type any custom/new medicine name freely.
-- **Fast Preset Datalists**:
-  - **Form**: `Tab.`, `Cap.`, `Inj.`, `Syr.`, `Drop`, `Oint.`, `Inhaler`, `Supp.`
-  - **Timing**: `1+0+0` (সকালে), `0+1+0` (দুপুরে), `0+0+1` (রাতে), `1+0+1` (সকাল + রাত), `1+1+1` (৩ বেলা), `1+1+1+1` (৪ বেলা), `1/2+0+1/2`, `1 spoon 3 times`, `2 puffs twice daily`, `As needed (PRN)`.
-  - **Duration**: `3 days`, `5 days`, `7 days`, `10 days`, `14 days`, `1 month`, `2 months`, `3 months`, `Continue (চলবে)`.
-  - **Instructions**: `After meal (খাবার পরে)`, `Before meal (খাবার আগে)`, `With meal (খাবারের সাথে)`, `Empty stomach (খালি পেটে)`, `At bedtime (ঘুমানোর আগে)`, `Before breakfast`, `After breakfast`, `As directed`.
-
----
-
-### 9. 🖨️ A4 Prescription Printing & PDF Streaming
-- **Dual-Mode Prescription Output**:
-  - **Full Print Mode**: Renders complete doctor letterhead, institutional credentials, hospital room number, patient details, clinical findings, medicines, and footer.
-  - **Pre-printed Pad Mode (Letterhead Spacer)**: Toggle on if the doctor writes on a pre-printed hospital pad. Hides header and reserves an adjustable 40mm–70mm top margin.
-- **A4 PDF Export**: Instant server-side PDF generation via DomPDF.
-- **Diagnostic Lab Test Requisition Slip (`/app/prescriptions/{id}/investigations`)**: Separates lab tests onto a dedicated investigation requisition slip with clinical indications.
-- **Direct WhatsApp Sharing**: Generates a pre-formatted WhatsApp message with patient name, prescription number, and a link to their digital prescription.
-
----
-
-### 10. 🛡️ Clinical Safety, Drug Allergies & Prescription Voiding
+### 8. 🛡️ Clinical Safety, Drug Allergies & Prescription Voiding
 - **Prominent Drug Allergies**:
-  - Patients table features an `allergies` field.
+  - `allergies` field on `patients` table.
   - Displayed prominently in **HIGH-VISIBILITY RED** inside the prescription studio next to patient demographics.
   - Printed on both physical prescriptions and PDFs right under the demographic strip (`Drug Allergies: Penicillin, Sulfa` or `NKDA - No Known Drug Allergies`).
 - **Prescription Voiding Workflow**:
@@ -143,7 +127,7 @@ Doctors should spend consultation time speaking with patients, not typing on key
 
 ---
 
-### 11. 🔐 Expiring Signed Share Links & Lightweight Audit Trail
+### 9. 🔐 Expiring Signed Share Links & Lightweight Audit Trail
 - **Expiring 7-Day Signed Patient Links (`/rx/{public_id}`)**:
   - Digital prescription links sent via WhatsApp use non-guessable ULID tokens (`public_id`) signed cryptographically with a 7-day expiration timestamp.
   - Internal database IDs and doctor backend URLs are never exposed.
@@ -155,7 +139,7 @@ Doctors should spend consultation time speaking with patients, not typing on key
 
 ---
 
-### 12. 📦 Idempotent Medicine Database & Concurrency Protections
+### 10. 📦 Idempotent Medicine Database & Concurrency Protections
 - **Collision-Safe RX Generation**:
   - Generates robust tokens (`RX-ymd-XXXXX`) wrapped in atomic DB transactions with up to 10 collision-retry attempts.
 - **Family-Member Disambiguation**:
@@ -164,7 +148,18 @@ Doctors should spend consultation time speaking with patients, not typing on key
 - **Idempotent Medicine Import**:
   - `php artisan app:import-medicines` / `php artisan medicines:import` uses database upserts on `[brand_name, strength, dosage_form]`. Re-running the command never creates duplicate medicines.
 
-### 10. 📊 Practice Analytics Dashboard (`/app/dashboard`)
+---
+
+### 11. 🖨️ A4 Prescription Printing & PDF Streaming
+- **Dual-Mode Prescription Output**:
+  - **Full Print Mode**: Renders complete doctor letterhead, institutional credentials, hospital room number, patient details, clinical findings, medicines, and footer.
+  - **Pre-printed Pad Mode (Letterhead Spacer)**: Toggle on if the doctor writes on a pre-printed hospital pad. Hides header and reserves an adjustable 40mm–70mm top margin.
+- **A4 PDF Export**: Instant server-side PDF generation via DomPDF.
+- **Diagnostic Lab Test Requisition Slip (`/app/prescriptions/{id}/investigations`)**: Separates lab tests onto a dedicated investigation requisition slip with clinical indications.
+
+---
+
+### 12. 📊 Practice Analytics Dashboard (`/app/dashboard`)
 Doctor analytics workspace scoped strictly to the authenticated tenant:
 - **KPI Metrics**: Total Prescriptions written, Prescriptions today, Prescriptions this month, Total Patients registered, Appointments queued today, Active chambers.
 - **Top Diagnoses Breakdown**: Visual frequency ranking of the doctor's most diagnosed medical conditions.
@@ -184,7 +179,7 @@ Doctor analytics workspace scoped strictly to the authenticated tenant:
 | **Frontend Styling** | Tailwind CSS | `v4.0` | Clean medical-grade UI |
 | **PDF Engine** | Barryvdh DomPDF | `^3.1` | Native A4 PDF generation |
 | **Database** | SQLite / MySQL / PostgreSQL | Compatible | Single DB with `tenant_id` scoping |
-| **Testing** | PHPUnit | `^12.5` | 33 comprehensive feature/isolation tests |
+| **Testing** | PHPUnit | `^12.5` | 43 comprehensive feature, safety & isolation tests |
 | **Code Formatter** | Laravel Pint | `^1.27` | Strict Laravel preset |
 
 ---
@@ -232,7 +227,7 @@ Log in at **`http://localhost:8000/login`** using any of the following credentia
 | :--- | :--- | :--- | :--- |
 | **Doctor** | `doctor@bikrify.com` | `password` | **Clinical Studio**: Full prescribing workspace, patient history, and analytics. |
 | **Assistant** | `assistant@bikrify.com` | `password` | **Front-Desk**: Queue booking & status updates (clinical findings/diagnosis masked). |
-| **Super Admin** | `admin@bikrify.com` | `password` | **Bikrify Portal**: Provision doctor clinics at `http://localhost:8000/admin/tenants`. |
+| **Super Admin** | `admin@bikrify.com` | `password` | **Bikrify Portal**: Provision and govern doctor clinics at `http://localhost:8000/admin/tenants`. |
 
 ---
 
@@ -243,20 +238,22 @@ Log in at **`http://localhost:8000/login`** using any of the following credentia
 | `/login` | `login` | `guest` | Livewire authentication portal. |
 | `/app` | `prescription.builder` | `auth, tenant.active` | Main Prescription Studio workspace. |
 | `/app/dashboard` | `doctor.dashboard` | `auth, tenant.active` | Practice analytics dashboard. |
-| `/app/prescriptions` | `prescription.list` | `auth, tenant.active` | Prescription records, search, and reprint. |
+| `/app/prescriptions` | `prescription.list` | `auth, tenant.active` | Prescription records, search, voiding, and reprint. |
 | `/app/appointments` | `appointment.manager` | `auth, tenant.active` | Patient queue desk & appointment booking. |
+| `/app/audit-logs` | `audit.logs` | `auth, tenant.active` | Security & clinical event audit log viewer. |
 | `/app/chambers/{id}/qr-standee` | `chamber.qr_standee` | `auth, tenant.active` | Printable A4 chamber door QR standee poster. |
 | `/app/prescriptions/{id}/print` | `prescription.print` | `auth, tenant.active` | A4 prescription print & letterhead view. |
 | `/app/prescriptions/{id}/pdf` | `prescription.pdf` | `auth, tenant.active` | DomPDF download stream. |
 | `/app/prescriptions/{id}/investigations`| `prescription.investigations` | `auth, tenant.active`| Lab test requisition slip. |
-| `/admin/tenants` | `admin.tenants` | `auth, role.super_admin` | Super-admin tenant provisioning portal. |
+| `/rx/{public_id}` | `prescription.public_share` | `signed` | Secure 7-day expiring patient WhatsApp prescription link. |
+| `/admin/tenants` | `admin.tenants` | `auth, role.super_admin` | Super-admin tenant provisioning & profile governance. |
 | `/{tenant:slug}` | `appointment.public_book`| `throttle:30,1` | Public patient self-booking page (e.g. `/dr-mahbubur`). |
 
 ---
 
 ## 🧪 Automated Testing
 
-This application includes a PHPUnit test suite with **33 passing tests** and **154 assertions** verifying:
+This application includes a PHPUnit test suite with **43 passing tests** and **199 assertions** verifying:
 - **Tenant Isolation**: Proves Tenant B cannot query, see, or search Tenant A's patients, prescriptions, or appointments.
 - **Route Authorization**: Proves cross-tenant access to `/app/prescriptions/{id}/print`, `/pdf`, and `/investigations` returns `404 Not Found`.
 - **Livewire ID Protection**: Proves passing another tenant's ID to Livewire actions returns `404 Not Found`.
