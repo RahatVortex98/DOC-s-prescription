@@ -1,8 +1,8 @@
 *.log
 .DS_Store
 .env
-.env.backup
-.env.production
+.env.*
+!.env.example
 .phpactor.json
 .phpunit.result.cache
 /.codex
@@ -21,11 +21,21 @@
 /storage/*.key
 /storage/pail
 /vendor
-/database/*.sqlite
-/database/*.sqlite-journal
-/database/*.sqlite-shm
-/database/*.sqlite-wal
+*.sqlite
+*.sqlite-journal
+*.sqlite-shm
+*.sqlite-wal
+database/*.sqlite
+database/*.sqlite-journal
+database/*.sqlite-shm
+database/*.sqlite-wal
 _ide_helper.php
 Homestead.json
 Homestead.yaml
 Thumbs.db
+
+# Agent & AI configuration / scratchpads
+/.agents/
+CLAUDE.md
+AGENTS.md
+boost.json

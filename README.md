@@ -4,7 +4,7 @@
 [![Livewire](https://img.shields.io/badge/Livewire-4.x-FB70A9?style=for-the-badge&logo=livewire&logoColor=white)](https://livewire.laravel.com)
 [![PHP](https://img.shields.io/badge/PHP-8.4-777BB4?style=for-the-badge&logo=php&logoColor=white)](https://php.net)
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind-4.0-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white)](https://tailwindcss.com)
-[![Tests](https://img.shields.io/badge/PHPUnit-33%20Passing-brightgreen?style=for-the-badge&logo=github-actions&logoColor=white)](#automated-testing)
+[![Tests](https://img.shields.io/badge/PHPUnit-43%20Passing-brightgreen?style=for-the-badge&logo=github-actions&logoColor=white)](#automated-testing)
 [![License](https://img.shields.io/badge/License-MIT-blue?style=for-the-badge)](LICENSE)
 
 **Bikrify Prescription Studio** is a commercial-grade, multi-tenant clinical Prescribing Platform and Patient Queue Management SaaS built specifically for doctors, hospital consultants, polyclinics, and receptionists in Bangladesh and global private practice.
@@ -128,6 +128,42 @@ Doctors should spend consultation time speaking with patients, not typing on key
 
 ---
 
+### 10. 🛡️ Clinical Safety, Drug Allergies & Prescription Voiding
+- **Prominent Drug Allergies**:
+  - Patients table features an `allergies` field.
+  - Displayed prominently in **HIGH-VISIBILITY RED** inside the prescription studio next to patient demographics.
+  - Printed on both physical prescriptions and PDFs right under the demographic strip (`Drug Allergies: Penicillin, Sulfa` or `NKDA - No Known Drug Allergies`).
+- **Prescription Voiding Workflow**:
+  - Doctors can mark erroneous or superseded prescriptions as **VOID** with an explicit cancellation reason.
+  - Voided prescriptions are permanently stamped with an angled, prominent **"VOID"** watermark on screen and print.
+  - Prevents accidental re-use, re-issuance, or cloning of canceled prescriptions.
+- **Soft Deletes Protection**:
+  - `Patient`, `Prescription`, and `Appointment` models utilize Eloquent Soft Deletes.
+  - Accidental deletion retains all medical history and audit trails safely in the database.
+
+---
+
+### 11. 🔐 Expiring Signed Share Links & Lightweight Audit Trail
+- **Expiring 7-Day Signed Patient Links (`/rx/{public_id}`)**:
+  - Digital prescription links sent via WhatsApp use non-guessable ULID tokens (`public_id`) signed cryptographically with a 7-day expiration timestamp.
+  - Internal database IDs and doctor backend URLs are never exposed.
+  - Tampered, altered, or expired URLs automatically return `403 Forbidden`.
+- **Lightweight Audit Trail (`/app/audit-logs`)**:
+  - Tracks critical events: `prescription.created`, `prescription.printed`, `prescription.pdf_downloaded`, `prescription.voided`, `prescription.deleted`, and `appointment.deleted`.
+  - Captures exact actor (`user_id`), clinic (`tenant_id`), timestamp, client IP, and event metadata.
+  - Accessible to clinic doctors via the **Audit Logs** navigation tab.
+
+---
+
+### 12. 📦 Idempotent Medicine Database & Concurrency Protections
+- **Collision-Safe RX Generation**:
+  - Generates robust tokens (`RX-ymd-XXXXX`) wrapped in atomic DB transactions with up to 10 collision-retry attempts.
+- **Family-Member Disambiguation**:
+  - In Bangladesh, multiple family members frequently share a single mobile phone number.
+  - Patient lookups strictly check `phone + trimmed case-insensitive name`. If only the phone matches, a new distinct patient record is automatically created rather than overwriting family members' medical history.
+- **Idempotent Medicine Import**:
+  - `php artisan app:import-medicines` / `php artisan medicines:import` uses database upserts on `[brand_name, strength, dosage_form]`. Re-running the command never creates duplicate medicines.
+
 ### 10. 📊 Practice Analytics Dashboard (`/app/dashboard`)
 Doctor analytics workspace scoped strictly to the authenticated tenant:
 - **KPI Metrics**: Total Prescriptions written, Prescriptions today, Prescriptions this month, Total Patients registered, Appointments queued today, Active chambers.
@@ -230,12 +266,26 @@ This application includes a PHPUnit test suite with **33 passing tests** and **1
 - **Rate Limiting**: Proves public booking enforces IP-based rate limiting against spam.
 - **Assistant Role Security**: Proves front-desk assistants cannot see clinical diagnosis or examination findings.
 - **Prescription Builder & Dropdowns**: Proves 1-click specialty bundles, drug kits, vitals calculation, and medicine search.
-- **DGDA CSV Bulk Import**: Proves streaming medicine database import works idempotently.
+- **DGDA CSV Bulk Import**: Proves streaming medicine database import works idempotently without duplicate records.
+- **Patient Disambiguation**: Proves family members sharing a phone receive separate, distinct medical records.
+- **Drug Allergies Persistence**: Proves patient allergies persist and render visibly on print and PDFs.
+- **Soft Deletes Protection**: Proves soft-deleted appointments and prescriptions remain preserved for audit integrity.
+- **Prescription Voiding**: Proves voided prescriptions display VOID watermarks and cannot be duplicated.
+- **7-Day Signed Links**: Proves expiring signed URLs allow patient access for 7 days while rejecting tampered requests.
+- **Audit Logging**: Proves prescription creation, printing, voiding, and deletion actions log actor IP and timestamps.
 
 Run the test suite with:
 ```bash
 php artisan test --compact
 ```
+
+---
+
+## 🚀 Continuous Integration (GitHub Actions)
+
+A production-ready GitHub Actions workflow is included at `.github/workflows/tests.yml`:
+- Triggered automatically on every `push` and `pull_request` to `main`.
+- Sets up PHP 8.4, Node.js 20, SQLite database, runs migrations, verifies code styling with Laravel Pint, and executes the complete 43-test PHPUnit test suite.
 
 ---
 
@@ -255,19 +305,20 @@ When onboarding a new doctor or hospital to **Bikrify**:
 1. **Step 1 — Provision Clinic via Super-Admin Portal (`/admin/tenants`)**:
    - Log in as Super Admin (`admin@bikrify.com`).
    - Enter Doctor Name, desired URL slug (e.g. `dr-farhana`), BMDC Reg. No., Doctor Email, and initial Password.
-   - Click **Create & Provision**. The tenant and doctor account are created in an atomic transaction.
-2. **Step 2 — Configure Practice Chambers**:
+   - Configure Hospital Affiliation, Room Number, Visiting Hours, and Hotline. These verified credentials are permanently maintained by Super Admin to ensure doctor credential integrity.
+   - Click **Create & Provision**. The tenant, doctor account, and default practice chamber are created atomically.
+2. **Step 2 — Doctor Logs In to Ready-to-Use Studio**:
    - The doctor logs in at `/login` and accesses **Prescription Studio (`/app`)**.
-   - Click **`+ Hospital`** or **`⚙️ Setup`** to add additional private hospitals, visiting hours, room numbers, and WhatsApp numbers.
+   - Zero setup overhead: chamber details, qualifications, and specialty bundles are pre-configured.
 3. **Step 3 — Print & Deliver the Door QR Standee**:
    - Open `/app/chambers/{id}/qr-standee` (or click **`📲 Door QR`** in the navigation bar).
    - Click **`🖨️ Print Chamber Door Poster`**.
-   - Deliver the laminated poster or acrylic standee to place outside the doctor's chamber door.
+   - Deliver the laminated poster or acrylic standee to place outside the doctor's chamber door for patient self-booking.
 4. **Step 4 — Train Doctor on 1-Click Speed Prescribing**:
    - Demonstrate the **`⚡ 1-Click Full Profile`** bundle.
    - Demonstrate the **`💊 Quick Drug Kits`**.
-   - Demonstrate **`🎙️ Voice Dictation`** in English and Bengali.
-   - Demonstrate **`💬 Send WhatsApp`** to deliver digital prescriptions directly to the patient's phone.
+   - Demonstrate **`🎙️ Voice Activate Studio`** in English and Bengali (`bn-BD`).
+   - Demonstrate **`💬 Send WhatsApp`** with 7-day secure expiring digital prescription links.
 
 ---
 
