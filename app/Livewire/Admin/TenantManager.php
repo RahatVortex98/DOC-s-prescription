@@ -50,6 +50,17 @@ class TenantManager extends Component
 
     public string $doctor_password = '';
 
+    // Chamber / Hospital profile (configured permanently by Super Admin)
+    public string $chamber_name = 'Main Consultation Chamber';
+
+    public string $chamber_address = '';
+
+    public string $chamber_phone = '';
+
+    public string $chamber_visiting_hours = '';
+
+    public string $room_number = '';
+
     public ?string $feedbackMessage = null;
 
     public function openCreateModal(): void
@@ -69,11 +80,17 @@ class TenantManager extends Component
             'status',
             'doctor_email',
             'doctor_password',
+            'chamber_name',
+            'chamber_address',
+            'chamber_phone',
+            'chamber_visiting_hours',
+            'room_number',
             'feedbackMessage',
         ]);
         $this->status = 'trial';
         $this->specialty = 'General Medicine';
         $this->brand_color = '#0891b2';
+        $this->chamber_name = 'Main Consultation Chamber';
         $this->showEditModal = false;
         $this->showCreateModal = true;
     }
@@ -103,6 +120,14 @@ class TenantManager extends Component
         $doctorUser = $tenant->users->where('role', 'doctor')->first();
         $this->doctor_email = $doctorUser ? $doctorUser->email : '';
         $this->doctor_password = '';
+
+        $chamber = Chamber::withoutGlobalScope('tenant')->where('tenant_id', $tenant->id)->where('is_default', true)->first()
+            ?? Chamber::withoutGlobalScope('tenant')->where('tenant_id', $tenant->id)->first();
+        $this->chamber_name = $chamber?->name ?? 'Main Consultation Chamber';
+        $this->chamber_address = $chamber?->address ?? '';
+        $this->chamber_phone = $chamber?->phone ?? '';
+        $this->chamber_visiting_hours = $chamber?->visiting_hours ?? '';
+        $this->room_number = $chamber?->room_number ?? '';
 
         $this->showCreateModal = false;
         $this->showEditModal = true;
@@ -168,11 +193,15 @@ class TenantManager extends Component
             // Create initial main chamber for this doctor with Super Admin verified credentials
             Chamber::withoutGlobalScope('tenant')->create([
                 'tenant_id' => $tenant->id,
-                'name' => 'Main Consultation Chamber',
+                'name' => $this->chamber_name ?: 'Main Consultation Chamber',
                 'doctor_name' => $tenant->doctor_name,
                 'doctor_qualification' => $tenant->doctor_qualification,
                 'doctor_designation' => $tenant->doctor_designation,
                 'specialty' => $tenant->specialty,
+                'address' => $this->chamber_address ?: null,
+                'phone' => $this->chamber_phone ?: null,
+                'visiting_hours' => $this->chamber_visiting_hours ?: null,
+                'room_number' => $this->room_number ?: null,
                 'is_default' => true,
             ]);
         });
@@ -240,14 +269,20 @@ class TenantManager extends Component
             $defaultChamber = Chamber::withoutGlobalScope('tenant')
                 ->where('tenant_id', $tenant->id)
                 ->where('is_default', true)
-                ->first();
+                ->first()
+                ?? Chamber::withoutGlobalScope('tenant')->where('tenant_id', $tenant->id)->first();
 
             if ($defaultChamber) {
                 $defaultChamber->update([
+                    'name' => $this->chamber_name ?: $defaultChamber->name,
                     'doctor_name' => $tenant->doctor_name,
                     'doctor_qualification' => $tenant->doctor_qualification,
                     'doctor_designation' => $tenant->doctor_designation,
                     'specialty' => $tenant->specialty,
+                    'address' => $this->chamber_address ?: $defaultChamber->address,
+                    'phone' => $this->chamber_phone ?: $defaultChamber->phone,
+                    'visiting_hours' => $this->chamber_visiting_hours ?: $defaultChamber->visiting_hours,
+                    'room_number' => $this->room_number ?: $defaultChamber->room_number,
                 ]);
             }
         });

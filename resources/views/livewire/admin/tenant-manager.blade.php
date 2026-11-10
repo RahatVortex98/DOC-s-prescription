@@ -240,6 +240,35 @@
                         </div>
                     @endif
 
+                    <!-- Hospital & Chamber Profile (Pre-configured by Super Admin) -->
+                    <div class="p-3 bg-slate-50 border border-slate-200 rounded-lg space-y-3">
+                        <h4 class="text-xs font-bold text-slate-800 uppercase tracking-wider">Hospital / Chamber Practice Location (Bikrify Setup)</h4>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-700 mb-1">Hospital / Chamber Name</label>
+                                <input type="text" wire:model="chamber_name" placeholder="e.g. Popular Diagnostic Center - Dhanmondi" class="w-full px-3 py-1.5 text-xs border border-slate-300 rounded-lg">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-700 mb-1">Room / Seat No.</label>
+                                <input type="text" wire:model="room_number" placeholder="e.g. Room #405, 4th Floor" class="w-full px-3 py-1.5 text-xs border border-slate-300 rounded-lg">
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-700 mb-1">Chamber Address / Location</label>
+                            <input type="text" wire:model="chamber_address" placeholder="e.g. House 16, Road 2, Dhanmondi, Dhaka" class="w-full px-3 py-1.5 text-xs border border-slate-300 rounded-lg">
+                        </div>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-700 mb-1">Serial Phone Hotline</label>
+                                <input type="text" wire:model="chamber_phone" placeholder="e.g. +880 1819-xxxxxx" class="w-full px-3 py-1.5 text-xs border border-slate-300 rounded-lg">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-700 mb-1">Visiting Hours</label>
+                                <input type="text" wire:model="chamber_visiting_hours" placeholder="e.g. 5 PM - 9 PM (Sat-Wed)" class="w-full px-3 py-1.5 text-xs border border-slate-300 rounded-lg">
+                            </div>
+                        </div>
+                    </div>
+
                     <div class="pt-4 flex items-center justify-end gap-2 border-t border-slate-100">
                         <button
                             type="button"

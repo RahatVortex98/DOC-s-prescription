@@ -199,6 +199,18 @@ class PrescriptionFeatureTest extends TestCase
             ->assertSet('items.3.name', 'Calcichew D');
     }
 
+    public function test_voice_prescribing_and_multiple_dropdown_actions(): void
+    {
+        Livewire::test(PrescriptionBuilder::class)
+            ->call('addVoiceMedicine', 'Napa Extra', '1+0+1', '5 days', 'After meal (খাবার পরে)', 'Tab.')
+            ->assertSet('items.0.name', 'Napa Extra')
+            ->assertSet('items.0.dosage', '1+0+1')
+            ->assertSet('items.0.duration', '5 days')
+            ->assertSet('items.0.instruction', 'After meal (খাবার পরে)')
+            ->call('appendQuickText', 'chief_complaints', 'Fever x 3 days')
+            ->assertSet('chief_complaints', 'Fever x 3 days');
+    }
+
     public function test_vitals_calculator_inserts_clean_oe(): void
     {
         Livewire::test(PrescriptionBuilder::class)

@@ -159,11 +159,23 @@ class PrescriptionBuilder extends Component
         }
 
         $chamber = Chamber::where('is_default', true)->first() ?: Chamber::first();
+        if (! $chamber) {
+            $tenant = auth()->user()?->tenant;
+            if ($tenant) {
+                $chamber = Chamber::withoutGlobalScope('tenant')->create([
+                    'tenant_id' => $tenant->id,
+                    'name' => 'Main Consultation Chamber',
+                    'doctor_name' => $tenant->doctor_name ?: 'Doctor',
+                    'doctor_qualification' => $tenant->doctor_qualification ?: 'MBBS',
+                    'doctor_designation' => $tenant->doctor_designation ?: 'Consultant',
+                    'specialty' => $tenant->specialty ?: 'General Medicine',
+                    'is_default' => true,
+                ]);
+            }
+        }
+
         if ($chamber) {
             $this->applyChamber($chamber);
-        } else {
-            $this->hasNoChamberSetup = true;
-            $this->openNewChamberModal();
         }
 
         $cloneId = $prescriptionId ?: request()->query('clone');
@@ -692,6 +704,38 @@ class PrescriptionBuilder extends Component
         }
     }
 
+    public function addVoiceMedicine(string $name, string $dosage = '1+0+1', string $duration = '7 days', string $instruction = 'After meal (খাবার পরে)', string $type = 'Tab.'): void
+    {
+        $name = trim($name);
+        if (empty($name)) {
+            return;
+        }
+
+        if (count($this->items) === 1 && empty($this->items[0]['name'])) {
+            $this->items[0] = [
+                'type' => $type,
+                'name' => $name,
+                'generic' => '',
+                'strength' => '',
+                'dosage' => $dosage,
+                'duration' => $duration,
+                'instruction' => $instruction,
+            ];
+
+            return;
+        }
+
+        $this->items[] = [
+            'type' => $type,
+            'name' => $name,
+            'generic' => '',
+            'strength' => '',
+            'dosage' => $dosage,
+            'duration' => $duration,
+            'instruction' => $instruction,
+        ];
+    }
+
     public function clearField(string $field): void
     {
         $this->{$field} = '';
@@ -700,11 +744,28 @@ class PrescriptionBuilder extends Component
     public function saveAndPrint()
     {
         if (! $this->selected_chamber_id) {
-            $this->hasNoChamberSetup = true;
-            $this->showChamberModal = true;
-            $this->addError('chamber', 'Please configure your practice chamber profile before creating prescriptions.');
+            $chamber = Chamber::where('is_default', true)->first() ?: Chamber::first();
+            if ($chamber) {
+                $this->applyChamber($chamber);
+            }
+        }
 
-            return;
+        $chamber = Chamber::find($this->selected_chamber_id)
+            ?? Chamber::where('is_default', true)->first()
+            ?? Chamber::first();
+
+        if (! $chamber) {
+            $tenant = auth()->user()?->tenant;
+            $chamber = Chamber::withoutGlobalScope('tenant')->create([
+                'tenant_id' => $tenant?->id,
+                'name' => 'Main Consultation Chamber',
+                'doctor_name' => $tenant?->doctor_name ?: 'Doctor',
+                'doctor_qualification' => $tenant?->doctor_qualification ?: 'MBBS',
+                'doctor_designation' => $tenant?->doctor_designation ?: 'Consultant',
+                'specialty' => $tenant?->specialty ?: 'General Medicine',
+                'is_default' => true,
+            ]);
+            $this->applyChamber($chamber);
         }
 
         $this->validate([

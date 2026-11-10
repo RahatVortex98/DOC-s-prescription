@@ -31,6 +31,16 @@ class Chamber extends Model
         'is_default',
     ];
 
+    protected static function booted(): void
+    {
+        static::creating(function (Chamber $chamber) {
+            $chamber->doctor_name = $chamber->doctor_name ?: 'Doctor';
+            $chamber->doctor_qualification = $chamber->doctor_qualification ?: 'MBBS';
+            $chamber->doctor_designation = $chamber->doctor_designation ?: 'Consultant';
+            $chamber->specialty = $chamber->specialty ?: 'General Medicine';
+        });
+    }
+
     /**
      * @return array<string, string>
      */
